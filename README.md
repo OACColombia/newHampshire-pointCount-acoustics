@@ -1,2 +1,19 @@
-# newHampshire-pointCount-acoustics
-Comparing point-count data and acoustic data to predict species abundances
+## Source code for _Predicting bird species abundances from acoustic data: New Hampshire Birds_  
+
+<!-- badges: start -->
+  [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+<!-- badges: end -->  
+
+This repository contains code and analysis for a manuscript that compares point count survey data to acoustic data of temperate bird species in New Hampshire.    
+
+This manuscript is currently in _progress_. Please reach out to the repository owner if you have questions.  
+
+### [Readable version](https://vjjan91.github.io/newHampshire-pointCount-acoustics/)
+
+A readable version of this analysis is available in bookdown format by clicking on the heading above.  
+
+### Source code for the analyses  
+
+We describe what each script (`.Rmd`) of this repository is intended to achieve below.  
+
+** work in progress **
