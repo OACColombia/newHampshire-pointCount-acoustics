@@ -106,6 +106,7 @@ acoustic_data$year <- lubridate::year(acoustic_data$date)
 # remove non-bird species and unidentified/NA values
 acoustic_data <- acoustic_data %>%
   filter(!common_name %in% c("Eastern Chipmunk",
+                             "Red Squirrel",
                              NA))
 
 # using the library naniar, we assess missing data/NANs or if exploratory processing of data did not clean up the NAs
