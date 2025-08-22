@@ -1,0 +1,92 @@
+---
+editor_options: 
+  chunk_output_type: console
+---
+
+# Species Richness
+
+In this script, we will compute species richness across sites and estimate coarse differences in diversity across point count and acoustic datasets. 
+
+## Load necessary libraries  
+```{r}
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(vegan)
+library(scico)
+library(data.table)
+library(extrafont)
+library(sf)
+library(raster)
+library(scales)
+library(ggplot2)
+library(ggspatial)
+library(colorspace)
+library(lubridate)
+library(naniar)
+library(ggstatsplot)
+```
+
+## Load dataframe containing point count and acoustic data
+```{r}
+datSubset <- read.csv("results/datSubset.csv")
+```
+
+## Estimate total abundance and richness for point count and acoustic data
+
+```{r}
+## point-count data
+# estimate total abundance across all species for each site
+# note: this analysis ignores visit_level information and pools overall abundance across visits per year to a site
+abundance <- datSubset %>%
+  filter(data_type == "point_count") %>%
+  group_by(site_id, site_name, year, scientific_name,
+           common_name) %>% 
+  summarise(total_abundance = sum(abundance)) %>%
+  ungroup()
+
+# Red Crossbill in Acadia National Park (ACAD3403) in year 2023 and Black-throated Green Warbler in year 2022 in Acadia National Park (ACAD3504) reported highest values of abundance (at n=19 and 16, respectively)
+
+# estimate richness for point_count data at each site
+pc_richness <- abundance %>%
+  mutate(forRichness = case_when(total_abundance > 0 ~ 1)) %>%
+  group_by(site_id, site_name, year) %>%
+  summarise(richness = sum(forRichness)) %>%
+  mutate(data_type = "point_count") %>%
+  ungroup()
+
+# while this analysis is not particularly informative, it does tell us that KAWW5401 in year 2023 reported highest species richness (value=30)
+
+# please note that both the calculations above discount the fact that there is an uneven number of visits to each site across years
+
+# estimate total number of detections using the manual annotations of the acoustic data
+# we ignore visit_level information and pool total detections at each site per year for this analysis
+detections <- datSubset %>%
+  filter(data_type == "acoustic_data") %>%
+  group_by(site_id, year, site_name, scientific_name, common_name) %>% summarise(total_detections = n()) %>%
+  ungroup()
+
+# estimate richness for acoustic data
+aru_richness <- detections %>%
+  mutate(forRichness = case_when(total_detections > 0 ~ 1)) %>%
+  group_by(site_id, site_name, year) %>%
+  summarise(richness = sum(forRichness)) %>%
+  mutate(data_type = "acoustic_data") %>%
+  ungroup()
+
+# while this analysis is not particularly informative, it does tell us that MABI1102 in year 2022 reported highest species richness (value= 23)
+
+# how many species were detected in a point count but not acoustic data?
+pc_not_aru <- unique(anti_join(abundance[,5], detections[,5]))
+
+# Nine species were detected only in point count data but not in the acoustic data and can be ignored for downstream analysis: Herring Gull, Northern Cardinal, American Goshawk, Swamp Sparrow, Red-bellied Woodpecker, Pine Siskin, Savannah Sparrow, Eastern Kingbird, Brown-headed Cowbird
+
+# how many species were detected in acoustic data but not point counts?
+aru_not_pc <- unique(anti_join(detections[,5], abundance[,5]))
+
+# Six species were detected only in acoustic data and not in the point count data and can also be ignored for downstream analysis: Cape May Warbler, Gray Catbird, Mallard, Prairie Warbler, House Wren, Bobolink
+```
+
+
+
+
