@@ -25,6 +25,7 @@ library(colorspace)
 library(lubridate)
 library(naniar)
 library(ggstatsplot)
+library(patchwork)
 ```
 
 ## Load dataframe containing point count and acoustic data
@@ -86,10 +87,9 @@ data <- full_join(abundance, detections) %>%
   replace_na(list(abundance = 0, detections = 0))
 ```
 
-## Correlative analysis
+## Correlative analysis at a regional level
 
-run this first, faceting by year and regional level
-repeat then at a species-specific level, year & regional level
+We run this analysis by pooling acoustic detections across sites within region. 
 ```{r}
 ## prior to running correlations, we get rid of species with very few counts of either abundance or detections within each year
 ## essentially, we want to filter out rarities at this stage 
@@ -105,7 +105,7 @@ spp_subset <-  data %>%
 # subset the data
 # Only 38 species remain if we were to keep the above filters
 data <- data %>%
-  filter(common_name %in% spp_subset$common_name)
+  semi_join(spp_subset, by = c("common_name", "year", "site_name"))
 
 # visualization
 # for the first correlation, let's pool data at a regional level
@@ -116,9 +116,9 @@ grouped_data <- data %>%
   ungroup()
 
 # create a grouping variable for visualization
-grouped_data$year_site <- paste(grouped_data$year, 
-                                grouped_data$site_name, 
-                                sep = " - ")
+grouped_data <- grouped_data %>%
+  mutate(site_year = paste(site_name, year, sep = " - ")) %>%
+  mutate(site_year = factor(site_year, levels = unique(site_year)))
 
 # visualize
 fig_abund_detec_community <- grouped_ggscatterstats(
@@ -128,7 +128,7 @@ fig_abund_detec_community <- grouped_ggscatterstats(
   type = "r",
   ylab = "Abundance (point-count)",
   xlab = "Acoustic detections",
-  grouping.var = year_site,
+  grouping.var = site_year,
   label.var = common_name, 
   label.expression = detections > 500,
   ggplot.component = list(theme(text = element_text(family = "Century Gothic", size = 15, face = "bold"),plot.title = element_text(family = "Century Gothic",
@@ -141,8 +141,212 @@ fig_abund_detec_community <- grouped_ggscatterstats(
 ggsave(fig_abund_detec_community, filename = "figs/abundance_vs_detections_pooled_across_sites_by_year.png", width = 25, height = 12, device = png(), units = "in", dpi = 300)
 dev.off() 
 
-# inferences: patterns of correlations are reflective of the bird community across regional sites and years. We see closely/fairly close values of correlation between point count data and acoustic detections within a region across years. For example, HBEF between 2022 and 2023 is showing correlations of 0.76 and 0.82. However, this includes data that is pooled across species and one must test if such patterns emerge within species. 
+# inferences: patterns of correlations are reflective of the bird community across regional sites and years. We see fairly similar values of correlation between point count data and acoustic detections within a region across years. For example, HBEF between 2022 and 2023. However, this includes data that is pooled across species and one must test if such patterns emerge within species. 
 ```
 
+## Species-specific correlations
 
+Here, we run analysis correlating abundance and detections for each species across years. 
+
+```{r}
+# create a grouping variable for visualization
+data <- data %>%
+  mutate(site_year = paste(site_name, year, sep = " - ")) %>%
+  mutate(site_year = factor(site_year, levels = unique(site_year)))
+
+# plots to be created species by species
+plots <- list()
+
+for(i in 1:length(unique(data$common_name))){
+  
+# extract species scientific name
+a <- unique(data$common_name)[i]
+  
+# subset data for plotting
+for_plot <- data[data$common_name==a,]
+
+# visualization
+plots[[i]] <- grouped_ggscatterstats(
+  data = for_plot,
+  y = abundance,
+  x = detections,
+  type = "r",
+  ylab = "Abundance (point-count)",
+  xlab = "Acoustic detections",
+  grouping.var = site_year,
+  ggplot.component = list(theme(text = element_text(family = "Century Gothic", size = 15, face = "bold"),plot.title = element_text(family = "Century Gothic",
+      size = 18, face = "bold"),
+      plot.subtitle = element_text(family = "Century Gothic", 
+      size = 15, face = "bold",color="#1b2838"),
+      axis.title = element_text(family = "Century Gothic",
+      size = 15, face = "bold")))) + 
+  plot_annotation(
+  title = a,
+  theme = theme(plot.title = element_text(family = "Century Gothic", 
+                                         size = 20, 
+                                         face = "bold", 
+                                         hjust = 0.5)))
+}
+
+# plot and save as a single pdf
+cairo_pdf(
+  filename = "figs/abundance-acousticDetections-by-species-correlations.pdf",
+  width = 25, height = 12,
+  onefile = TRUE
+)
+plots
+dev.off() 
+```
+
+## Regressions between abundance and acoustic detections
+
+Here, we regress abundance and acoustic detections for each region and year.
+```{r}
+## We use the data object as it contains the subset of species with a minimum of 10 abundance values and 10 acoustic detections across sites and visits
+## I am borrowing code from Mikula et al. 2020 below
+## The data and scripts from their manuscript can be found here:
+## https://osf.io/fa9ky/
+
+# plots to be created for reach region and year 
+plots <- list()
+
+for(i in 1:length(unique(data$site_year))){
+  
+# subset data by unique region-year combination (eg. Acadia National Park - 2022)
+subset <- unique(data$site_year)[i]
+subset_data <- data[data$site_year==subset,]
+n_species <- length(unique(subset_data$common_name))
+
+# convert to data.table format
+subset_data <- setDT(subset_data)
+
+# extract t-value
+subset_data[,  t_value := summary(lm(abundance~detections))$coefficients[6], by = common_name] 
+
+# extract slope
+subset_data[,  slope := lm(abundance~detections)%>% coef()%>% nth(2), by = common_name] 
+
+# extract pearson's correlation
+subset_data[,  pearson := cor(abundance,detections), by = common_name] 
+
+# extract adjusted r squared
+subset_data[,  r_sq := summary(lm(abundance~detections))$adj.r.squared, by = common_name] 
+
+# create a column with the direction of the slope (whether it is positive or negative), which can be referred to later while plotting    
+subset_data[, slope_dir := ifelse(slope >0, '+', '-')]
+pos_reg <- paste("Positive regressions:",length(unique(subset_data$common_name[subset_data$slope_dir %in% c('+')])))
+
+## visualization
+plots[[i]] <- ggplot(subset_data, aes(x = detections,
+                                              y = abundance)) +
+  geom_point(color = "#9CC3D5",size = 1.2) +
+  geom_smooth(data = subset_data, aes(group = common_name,
+                                     color = slope_dir), 
+              method = 'lm', se = FALSE, 
+              linewidth = 0.7) +
+  scale_color_manual(values=c("#1B9E77", "#D95F02")) +
+  labs(x="\nAcoustic detections (from acoustic data)", 
+       y="Abundance (from point count data)\n",
+       title = subset,
+       subtitle = paste0(n_species," ","species"),
+       caption = pos_reg
+       ) + 
+  theme_bw() +
+  theme(text = element_text(family = "Century Gothic", size = 18, face = "bold"),plot.title = element_text(family = "Century Gothic",
+      size = 18, face = "bold"),
+      plot.subtitle = element_text(family = "Century Gothic", 
+      size = 15, face = "bold",color="#1b2838"),
+      axis.title = element_text(family = "Century Gothic",
+      size = 18, face = "bold"),
+      legend.position = "none")
+}
+
+# plot and save as a single pdf
+cairo_pdf(
+  filename = "figs/abundance-acousticDetections-region-year-regressions.pdf",
+  width = 12, height = 7,
+  onefile = TRUE
+)
+plots
+dev.off()
+```
+
+## Species-specific regression plots
+
+Here, we create species-specific regression plots by region and year
+```{r}
+# plots to be created for reach region and year 
+plots <- list()
+
+# regression summary
+reg_summary <- data.frame()
+
+# regressing species by species
+for(i in 1:length(unique(data$common_name))){
+  
+# subset data by unique region-year combination (eg. Acadia National Park - 2022)
+subset <- unique(data$common_name)[i]
+subset_data <- data[data$common_name==subset,]
+
+# convert to data.table format
+subset_data <- setDT(subset_data)
+
+# extract t-value
+subset_data[,  t_value := summary(lm(abundance~detections))$coefficients[6], by = site_year] 
+
+# extract slope
+subset_data[,  slope := lm(abundance~detections)%>% coef()%>% nth(2), by = site_year] 
+
+# extract pearson's correlation
+subset_data[,  pearson := cor(abundance,detections), by = site_year] 
+
+# extract adjusted r squared
+subset_data[,  r_sq := summary(lm(abundance~detections))$adj.r.squared, by = site_year] 
+
+## visualization
+plots[[i]] <- ggplot(subset_data, aes(x = detections,
+                                y = abundance)) +
+  geom_point(color = "#9CC3D5",size = 1.2) +
+  geom_smooth(aes(color = "#D95F02"), 
+              method = 'lm', se = FALSE, 
+              linewidth = 0.7) +
+  geom_text(data = subset_data, 
+            aes(label = paste("R² =", round(r_sq, 3))),
+            x = -Inf, y = Inf, 
+            hjust = -0.1, vjust = 1.5,
+            family = "Century Gothic", size = 4,
+            inherit.aes = FALSE) +
+  facet_wrap(~site_year, scales = "free")  +
+  labs(x="\nAcoustic detections (from acoustic data)", 
+       y="Abundance (from point count data)\n",
+       title = subset
+       ) + 
+  theme_bw() +
+  theme(text = element_text(family = "Century Gothic", size = 18, face = "bold"),plot.title = element_text(family = "Century Gothic",
+      size = 18, face = "bold"),
+      plot.subtitle = element_text(family = "Century Gothic", 
+      size = 15, face = "bold",color="#1b2838"),
+      axis.title = element_text(family = "Century Gothic",
+      size = 18, face = "bold"),
+      legend.position = "none")
+
+# extract the slope, t_value, pearson correlation and the adjusted r square
+lm_output <- subset_data %>%
+  dplyr::select(common_name, site_year, t_value, slope, pearson,r_sq) %>% distinct()
+reg_summary <- bind_rows(reg_summary, lm_output)
+}
+
+# plot and save as a single pdf
+cairo_pdf(
+  filename = "figs/abundance-acoustic-detections-by-species-regressions.pdf",
+  width = 15, height = 10,
+  onefile = TRUE
+)
+plots
+dev.off()
+
+# save regression summary data to file
+write.csv(reg_summary, "results/abundance-acoustic-detections-by-species-regressions.csv",
+          row.names = F)
+```
 
