@@ -1,0 +1,424 @@
+---
+editor_options: 
+  chunk_output_type: console
+---
+
+# Subsetting data and running exploratory data analyses
+
+In this script, we will compute species richness, analyze data by time of data and subset data by including only species that occur across x% of sites for further analyses.
+
+## Load necessary libraries  
+```{r}
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(vegan)
+library(scico)
+library(data.table)
+library(extrafont)
+library(sf)
+library(raster)
+library(scales)
+library(ggplot2)
+library(ggspatial)
+library(colorspace)
+library(lubridate)
+library(naniar)
+library(ggstatsplot)
+library(MetBrewer)
+library(gridExtra)
+library(grid)
+```
+
+## Load dataframe containing point count and acoustic data
+```{r}
+datSubset <- read.csv("results/pooled_pointCount_acoustic_data.csv")
+```
+
+## Estimate total abundance and richness for point count and acoustic data
+
+```{r}
+## point-count data
+# estimate total abundance across all species for each site
+# note: this analysis ignores visit_level information and pools overall abundance across visits per year to a site
+abundance <- datSubset %>%
+  filter(data_type == "point_count") %>%
+  group_by(site_id, site_name, year, scientific_name,
+           common_name) %>% 
+  summarise(total_abundance = sum(abundance)) %>%
+  ungroup()
+
+# Red Crossbill in Acadia National Park (ACAD3403) in year 2023 and Black-throated Green Warbler in year 2022 in Acadia National Park (ACAD3504) reported highest values of abundance (at n= 19 and n = 16, respectively)
+
+# estimate richness for point_count data at each site
+pc_richness <- abundance %>%
+  mutate(forRichness = case_when(total_abundance > 0 ~ 1)) %>%
+  group_by(site_id, site_name, year) %>%
+  summarise(richness = sum(forRichness)) %>%
+  mutate(data_type = "point_count") %>%
+  ungroup()
+
+# while this analysis is not particularly informative, it does tell us that KAWW5401 in year 2023 reported highest species richness (value=30)
+
+# please note that both the calculations above discount the fact that there is an uneven number of visits to each site across years
+
+# estimate total number of detections using the manual annotations of the acoustic data
+# we ignore visit_level information and pool total detections at each site per year for this analysis
+detections <- datSubset %>%
+  filter(data_type == "acoustic_data") %>%
+  group_by(site_id, year, site_name, scientific_name, common_name) %>% summarise(total_detections = n()) %>%
+  ungroup()
+
+# while this information is pooled across visits, the analysis reported highest detections for the Chestnut-sided Warbler at MABI1103 in Marsh-Billings in 2023 (n= 256 detections)
+
+# estimate richness for acoustic data
+aru_richness <- detections %>%
+  mutate(forRichness = case_when(total_detections > 0 ~ 1)) %>%
+  group_by(site_id, site_name, year) %>%
+  summarise(richness = sum(forRichness)) %>%
+  mutate(data_type = "acoustic_data") %>%
+  ungroup()
+
+# while this analysis is not particularly informative, it does tell us that MABI1102 in year 2022 reported highest species richness (value= 23)
+
+# how many species were detected in a point count but not acoustic data?
+pc_not_aru <- unique(anti_join(abundance[,5], detections[,5]))
+
+# Nine species were detected only in point count data but not in the acoustic data and can be ignored for downstream analysis: Herring Gull, Northern Cardinal, American Goshawk, Swamp Sparrow, Red-bellied Woodpecker, Pine Siskin, Savannah Sparrow, Eastern Kingbird, Brown-headed Cowbird
+
+# how many species were detected in acoustic data but not point counts?
+aru_not_pc <- unique(anti_join(detections[,5], abundance[,5]))
+
+# Six species were detected only in acoustic data and not in the point count data and can also be ignored for downstream analysis: Cape May Warbler, Gray Catbird, Mallard, Prairie Warbler, House Wren, Bobolink
+```
+
+## Creating a single dataframe prior to running statistical analysis
+
+```{r}
+## filter out species that were only detected in one approach and not in the other
+point_count <- datSubset %>%
+  filter(data_type == "point_count") %>%
+  filter(!common_name %in% c("Herring Gull", 
+                             "Northern Cardinal", "American Goshawk", 
+                             "Swamp Sparrow", "Red-bellied Woodpecker", 
+                             "Pine Siskin",
+                             "Savannah Sparrow", "Eastern Kingbird", 
+                             "Brown-headed Cowbird"
+                             ))
+
+acoustic_data <- datSubset %>%
+  filter(data_type == "acoustic_data") %>%
+  filter(!common_name %in% c("Cape May Warbler", "Gray Catbird", 
+                             "Mallard", "Prairie Warbler", 
+                             "House Wren", "Bobolink"
+                             ))
+
+# estimate abundance for each species for each site/visit combination
+# ignore distance for now as we can model it in future analysis
+abundance <- point_count %>%
+  group_by(site_id, site_name, year, start_time, visit_number,
+           scientific_name,
+           common_name) %>% 
+  summarise(abundance = sum(abundance)) %>%
+  ungroup()
+
+# estimate detections for each species for each site and year combination using the manual annotations of the acoustic data
+detections <- acoustic_data %>%
+  group_by(site_id, site_name, year, visit_number,
+           scientific_name,
+           common_name) %>% 
+  summarise(detections = n()) %>%
+  ungroup()
+
+## sanity check to ensure that we are not including any species in either data type by mistake
+pc_not_aru <- unique(anti_join(abundance[,7], 
+                               detections[,6]))
+aru_not_pc <- unique(anti_join(detections[,6], 
+                               abundance[,7]))
+```
+
+## Filtering criteria for species inclusion
+
+How do we decide on the number of species to include or what species to keep? One criteria that was employed in Ramesh et al. 2022 (Ecography) was: "we kept only those species that occurred in at least 5% of all checklists across at least 27 unique grid cells (50% of the study area)." In a similar vein, we keep species occurring in atleast 15% of sites across both years for both acoustic data and point count data. While the percentage is arbitrary, this number reflects an objective approach/criteria to filter/keep species.  
+```{r}
+# add a total number of unique sites
+# 104 unique sites
+total_sites <- length(unique(abundance$site_id)) 
+
+# how many sites was each species observed in when carrying out point counts and when carrying out manual acoustic annotations/detections?
+species_year_pc <-  abundance %>%
+  group_by(common_name, year) %>%
+  summarise(n_sites = n_distinct(site_id), .groups = 'drop') %>%
+  arrange(desc(n_sites)) %>%
+   mutate(total_sites,
+         prop_sites = n_sites/total_sites) # proportion of sites
+
+species_year_aru <- detections %>%
+  group_by(common_name, year) %>%
+  summarise(n_sites = n_distinct(site_id), .groups = 'drop') %>%
+  arrange(desc(n_sites)) %>%
+  mutate(total_sites,
+         prop_sites = n_sites/total_sites) # proportion of sites
+
+# we choose to keep species that occurred in atleast 15% of sites in each method and within a year
+species_pc <- species_year_pc %>%
+  filter(prop_sites >= 0.15)
+
+species_aru <- species_year_aru %>%
+  filter(prop_sites >= 0.15)
+
+# subset data from the abundance and detections dataframe to keep only species that occur in 15% of all sites during each year of survey
+aru_subset <- detections %>%
+  semi_join(species_aru, by = c("common_name", "year"))
+
+pc_subset <- abundance %>%
+  semi_join(species_pc, by = c("common_name", "year"))
+
+# we only keep species that satisfied the criteria for both point counts and acoustic data. In some cases, a few species satisfied the criteria for only point counts or only acoustic data and such species were filtered out prior to other analyses
+
+# how many species were detected in acoustic data but not point counts?
+# no new species were matching the criteria in acoustic data
+aru_not_pc <- unique(anti_join(aru_subset[,6], pc_subset[,7]))
+
+# five species matched criteria in point counts that were not found in the acoustic data
+pc_not_aru <- unique(anti_join(pc_subset[,7], aru_subset[,6]))
+
+# removing these five species from the pc_subset
+pc_subset <- pc_subset %>%
+  filter(!common_name %in% c("Dark-eyed Junco","Red Crossbill",
+                             "American Goldfinch","Wood Thrush",
+                             "American Redstart"))
+
+# create a single dataframe
+data <- full_join(pc_subset, aru_subset) %>%
+  replace_na(list(abundance = 0, detections = 0))
+
+# criteria of 15% occurrence across sites per year/season for both acoustic data and point count data resulted in 22 species.
+```
+
+## Explore whether time of day shows any variation in abundance/detections?
+
+Prior to running statistical models comparing abundance and acoustic detections, we explore the two aforementioned variables as a function of time of day of survey/detection
+```{r}
+# examine summary of the data and check for NAs
+miss_var_summary(data)
+
+# start_time column has NAs which is mostly showing up for the acoustic data suggesting that there are species reported in the audio data during that visit that was not detected in that point count for the very same corresponding visit
+data <- data %>%
+  group_by(site_id, year, visit_number) %>%
+  fill(start_time, .direction = "downup") %>%
+  ungroup()
+
+# create bins for time_of_day
+data <- data %>%
+  mutate(
+    hour = as.numeric(substr(start_time, 1, 2)),
+    time_of_day = case_when(
+      hour >= 5 & hour < 6 ~ "5AM to 6AM",
+      hour >= 6 & hour < 7 ~ "6AM to 7AM",
+      hour >= 7 & hour < 8 ~ "7AM to 8AM", 
+      hour >= 8 & hour < 9 ~ "8AM to 9AM",
+      hour >= 9 & hour < 10 ~ "9AM to 10AM",
+      TRUE ~ "Other"
+    )
+  ) %>%
+  dplyr::select(-hour)
+
+# create abundance by time of day 
+fig_abundance_by_time <- data%>%
+  ggbetweenstats(x = time_of_day,
+                         y = abundance,
+                         xlab = "Time of Day",
+                         ylab = "Counts of Individuals (Abundance)", 
+                          violin.args = list(width = 0),
+                         pairwise.display = "significant",
+                         package = "MetBrewer",
+                         palette = "Homer2",
+ggplot.component = list(theme(text = element_text(family = "Century Gothic", size = 15, face = "bold"),plot.title = element_text(family = "Century Gothic",
+      size = 18, face = "bold"),
+      plot.subtitle = element_text(family = "Century Gothic", 
+      size = 15, face = "bold",color="#1b2838"),
+      axis.title = element_text(family = "Century Gothic",
+      size = 15, face = "bold"))))
+
+# save
+ggsave(fig_abundance_by_time, filename = "figs/abundance-by-time-of-day.png", width = 12, height = 7, device = png(), units = "in", dpi = 300)
+dev.off()
+
+# we notice that besides 9am to 10am where there are fewer point counts & acoustic data, there aren't any differences in abundance across times
+
+# detections by time of day 
+fig_detections_by_time <- data%>%
+  ggbetweenstats(x = time_of_day,
+                         y = detections,
+                         xlab = "Time of Day",
+                         ylab = "Acoustic detections", 
+                          violin.args = list(width = 0),
+                         pairwise.display = "significant",
+                         package = "MetBrewer",
+                         palette = "Homer2",
+ggplot.component = list(theme(text = element_text(family = "Century Gothic", size = 15, face = "bold"),plot.title = element_text(family = "Century Gothic",
+      size = 18, face = "bold"),
+      plot.subtitle = element_text(family = "Century Gothic", 
+      size = 15, face = "bold",color="#1b2838"),
+      axis.title = element_text(family = "Century Gothic",
+      size = 15, face = "bold"))))
+
+# when pooled across species and examining differences in detections by time of day, we see no differences. 
+
+# save
+ggsave(fig_detections_by_time, filename = "figs/detections-by-time-of-day.png", width = 12, height = 7, device = png(), units = "in", dpi = 300)
+dev.off()
+```
+
+## Are there differences in abundances/detections within species across times of day?
+
+While no differences were observed when datasets were pooled, we test if there are differences within species across times of day.
+```{r}
+# abundance and detections side by side
+plots <- list()
+
+for(i in 1:length(unique(data$common_name))){
+ 
+  # extract species common name
+  a <- unique(data$common_name)[i]
+    
+  # subset data for plotting
+  for_plot <- data[data$common_name==a,]
+
+  # abundance plot
+  abundance_plot <- ggplot(for_plot, 
+         aes(x = time_of_day, 
+             y = abundance, 
+             fill = factor(time_of_day))) +
+    geom_boxplot(alpha = 0.7, width = 0.2, size = 0.3) +  
+    scale_fill_manual(
+      values = met.brewer("Tiepolo",5),
+      name = "Time of Day"
+    ) +
+    theme_bw() +
+    labs(
+      x = "\nTime of Day",
+      y = "Abundance\n"
+    ) +
+    theme(
+      axis.title = element_text(
+        family = "Century Gothic",
+        size = 14, 
+        face = "bold"
+      ),
+      axis.text = element_text(
+        family = "Century Gothic",
+        size = 12
+      ),
+      axis.text.x = element_text(
+        angle = 90, 
+        vjust = 0.5,
+        hjust = 1
+      ),
+       legend.title = element_text(
+        family = "Century Gothic",
+        size = 12,
+        face = "bold"
+      ),
+      legend.text = element_text(
+        family = "Century Gothic",
+        size = 10
+      ),
+      plot.title = element_text(
+        family = "Century Gothic",
+        size = 16,
+        face = "bold"
+      ),
+      strip.text = element_text(
+        family = "Century Gothic",
+        size = 12
+      )
+    )
+  
+  # detections plot
+  detections_plot <- ggplot(for_plot, 
+         aes(x = time_of_day, 
+             y = detections, 
+             fill = factor(time_of_day))) +
+    geom_boxplot(alpha = 0.7, width = 0.2, size = 0.3) +  
+    scale_fill_manual(
+      values = met.brewer("Tiepolo",5),
+      name = "Time of Day"
+    ) +
+    theme_bw() +
+    labs(
+      x = "\nTime of Day",
+      y = "Detections\n"
+    ) +
+    theme(
+      axis.title = element_text(
+        family = "Century Gothic",
+        size = 14, 
+        face = "bold"
+      ),
+      axis.text = element_text(
+        family = "Century Gothic",
+        size = 12
+      ),
+      axis.text.x = element_text(
+        angle = 90, 
+        vjust = 0.5,
+        hjust = 1
+      ),
+       legend.title = element_text(
+        family = "Century Gothic",
+        size = 12,
+        face = "bold"
+      ),
+      legend.text = element_text(
+        family = "Century Gothic",
+        size = 10
+      ),
+      plot.title = element_text(
+        family = "Century Gothic",
+        size = 16,
+        face = "bold"
+      ),
+      strip.text = element_text(
+        family = "Century Gothic",
+        size = 12
+      )
+    )
+  
+  # combine plots side by side
+  combined_plot <- abundance_plot + detections_plot + 
+  plot_annotation(title = a,
+                  theme = theme(plot.title = element_text(
+                    family = "Century Gothic",
+                    size = 18,
+                    face = "bold")))
+  
+  plots[[i]] <- combined_plot
+}
+
+# plot and save as a single pdf
+cairo_pdf(
+  filename = "figs/abundance-detections-by-species-time-of-day.pdf",
+  width = 16, height = 8,  
+  onefile = TRUE
+)
+for(i in 1:length(plots)) {
+  print(plots[[i]])
+}
+dev.off()
+```
+
+Interestingly, we are not observing much variation between times of day for both acoustic detections and species abundances across species, potentially suggesting that time of day may/may not be impacting our results or might contribute to differences we are observing. 
+
+## Save the subsetted data to file
+
+```{r}
+# write to file
+write.csv(data, "results/datSubset.csv", row.names = F)
+```
+
+
+
+
+
