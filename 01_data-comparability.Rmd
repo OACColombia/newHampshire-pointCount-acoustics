@@ -163,10 +163,6 @@ datSubset <- datSubset %>%
   mutate(visit_number = dense_rank(date))
 
 # write to file
-write.csv(datSubset, "results/datSubset.csv", row.names = F)
+write.csv(datSubset, "results/pooled_pointCount_acoustic_data.csv", row.names = F)
 ```
-
-
-
-
 
