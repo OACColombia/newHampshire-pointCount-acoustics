@@ -198,7 +198,32 @@ data <- full_join(pc_subset, aru_subset) %>%
 
 ## Explore whether time of day shows any variation in abundance/detections?
 
-Prior to running statistical models comparing abundance and acoustic detections, we explore the two aforementioned variables as a function of time of day of survey/detection
+Prior to running statistical models comparing abundance and acoustic detections, we explore the two aforementioned variables as a function of time of day of survey/detection.
+
+Before including the imperfect detection aspect, let's see the general dynamic of abundance and acoustic detections during the morning of sampling
+```{r}
+# looking at time as a continuous value, and the counts as the estimate of abundance
+data |> 
+  mutate(start_time = hms::as_hms(start_time)) |> 
+  ggplot(aes(x = start_time, y = abundance)) + 
+  geom_segment(aes(y = 0, yend = abundance), color = "gray") + 
+  geom_point() + 
+  facet_wrap(~common_name, ncol = 4) + 
+  theme_minimal() 
+
+data |> 
+  mutate(start_time = hms::as_hms(start_time)) |> 
+  ggplot(aes(x = start_time, y = detections)) + 
+  geom_segment(aes(y = 0, yend = detections), color = "gray") + 
+  geom_point() + 
+  facet_wrap(~common_name, ncol = 4, scale = "free_y") + 
+  theme_minimal() 
+
+```
+
+
+
+
 ```{r}
 # examine summary of the data and check for NAs
 miss_var_summary(data)
@@ -208,7 +233,10 @@ data <- data %>%
   group_by(site_id, year, visit_number) %>%
   fill(start_time, .direction = "downup") %>%
   ungroup()
+```
 
+
+```{r}
 # create bins for time_of_day
 data <- data %>%
   mutate(
