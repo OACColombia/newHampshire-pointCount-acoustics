@@ -243,6 +243,8 @@ data |>
   theme(legend.position = "bottom")
 ggsave(filename = "figs/acu_detections-by-time-continuous.jpg", width = 10, height = 10, units = "in", dpi = 300)
 
+# I (Orlando) will play with this `data` object
+saveRDS(data, "data/data_time_continuous.RDS")
 ```
 
 
