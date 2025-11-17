@@ -1,0 +1,448 @@
+---
+editor_options:
+  chunk_output_type: console
+---
+
+# Hierarchical model approach
+
+## Packages
+```{r}
+library(tidyverse)
+library(MetBrewer)
+library(nimble)
+library(coda)
+```
+
+## Loading and exploring data
+
+Let's load the file used in `01_data-comparability.Rmd` script. 
+
+```{r loading data}
+acous_count <- read_csv("results/pooled_pointCount_acoustic_data.csv")
+
+table(acous_count$common_name, acous_count$data_type)
+```
+
+From 174 species, Vijay suggested to focus on 22 species (see `02_data-subsetting-and-EDA.Rmd`).
+
+```{r}
+acous_count_filt <- acous_count |>
+  filter(common_name %in% c("American Crow",
+                            "American Robin",
+                            "Black-and-white Warbler",
+                            "Black-capped Chickadee",
+                            "Black-throated Blue Warbler",
+                            "Black-throated Green Warbler",
+                            "Blackburnian Warbler",
+                            "Blue Jay",
+                            "Blue-headed Vireo",
+                            "Brown Creeper",
+                            "Eastern Wood-Pewee",
+                            "Golden-crowned Kinglet",
+                            "Hermit Thrush",
+                            "Northern Parula",
+                            "Ovenbird",
+                            "Pine Warbler",
+                            "Red-breasted Nuthatch",
+                            "Red-eyed Vireo",
+                            "Scarlet Tanager",
+                            "Winter Wren",
+                            "Yellow-bellied Sapsucker",
+                            "Yellow-rumped Warbler"))
+table(acous_count_filt$common_name, acous_count_filt$data_type)
+```
+
+The package `naniar` allow to see a good summar of NAs per column
+
+```{r}
+naniar::miss_var_summary(acous_count_filt)
+```
+
+How to reconcile time of detection of each record? While the `point_count` data include the `observation_time` variable, this information for the `acoustic_data` seems to be at the `begin_clock_time` variable. Let's adjust this with the function `coalesce` from `dplyr` in `tidyverse`. Then, we can consolidate the "initial temporal window" per visit in each site_id with the detection time.
+
+```{r}
+acoust_count_summary <- acous_count_filt |>
+  # dummy column to unify time of detection either by count or 
+  mutate(detection_time = coalesce(observation_time, begin_clock_time)) |> 
+  # initial temporal window
+  group_by(site_id, date, visit_number) |>
+  mutate(time_window = min(hms::as_hms(detection_time), na.rm = TRUE),
+         time_window = hms::as_hms(time_window)) |> 
+  # First summarization to extract sum of counts per point count and number of detections
+  group_by(site_name, site_id, date, visit_number, common_name, data_type, time_window) |>
+  summarise(abundance = sum(abundance, na.rm = TRUE),
+         acous_detections = n()) |>
+  # Second summarization to count number of detections and extract overall counts
+  group_by(site_name, site_id, date, visit_number, common_name, time_window) |>
+  summarise(counts = sum(abundance, na.rm = TRUE),
+         acous_detections = sum(acous_detections)) |>
+  as.data.frame()
+```
+
+And we can generate the figures. This are similar to my previous attempt, but including some days or point counts discarded by Vijay due to species richness. 
+
+Time series of the counts
+
+```{r}
+ggplot(acoust_count_summary,
+       aes(x = time_window, y = counts, color = site_name)) + 
+  geom_segment(aes(y = 0, yend = counts), alpha = 0.3) + 
+  geom_point(alpha = 0.6) + 
+  facet_wrap(~common_name, ncol = 3) + 
+  labs(x = "Time",
+       y = "Number of individuals counted in a 10-minute point count",
+       color = "Site")+
+  scale_color_manual(values=met.brewer("Homer2", 4))+
+  theme_minimal()+
+  theme(legend.position = "bottom")
+ggsave(filename = "figs/counts-by-time-continuous.jpg", width = 10, height = 10, units = "in", dpi = 300)
+```
+![Counts during the morning](figs/counts-by-time-continuous.jpg)
+
+Time series of acoustic detections
+
+```{r}
+ggplot(acoust_count_summary,
+       aes(x = time_window, y = acous_detections, color = site_name)) + 
+  geom_segment(aes(y = 0, yend = acous_detections), alpha = 0.3) + 
+  geom_point(alpha = 0.6) + 
+  facet_wrap(~common_name, ncol = 3, scales = "free_y") + 
+  labs(x = "Time",
+       y = "Number of acoustic detections in a 10-minute recording",
+       color = "Site")+
+  scale_color_manual(values=met.brewer("Homer2", 4))+
+  theme_minimal()+
+  theme(legend.position = "bottom")
+ggsave(filename = "figs/acou_det-by-time-continuous.jpg", width = 10, height = 10, units = "in", dpi = 300)
+```
+![Acoustic detections during the morning](figs/acou_det-by-time-continuous.jpg)
+
+This summary dataset also allow to see the potential effect of phenology. We can see the two years independently
+
+```{r}
+acoust_count_summary |>
+  mutate(year = year(date)) |>
+  filter(year == 2022) |>
+  ggplot(aes(x = date, y = counts, color = site_name))+
+  geom_segment(aes(y = 0, yend = counts), alpha = 0.3) + 
+  geom_point(alpha = 0.6) + 
+  facet_wrap(~common_name, ncol = 3) + 
+  labs(x = "Date of survey (2022)",
+       y = "Number of individuals counted in a 10-minute point count",
+       color = "Site")+
+  scale_color_manual(values=met.brewer("Homer2", 4))+
+  theme_minimal()+
+  theme(legend.position = "bottom")
+ggsave(filename = "figs/counts-by-date_2022.jpg", width = 10, height = 10, units = "in", dpi = 300)
+```
+![Counts 2022 - phenology](figs/counts-by-date_2022.jpg)
+
+```{r}
+acoust_count_summary |>
+  mutate(year = year(date)) |>
+  filter(year == 2022) |>
+  ggplot(aes(x = date, y = acous_detections, color = site_name))+
+  geom_segment(aes(y = 0, yend = acous_detections), alpha = 0.3) + 
+  geom_point(alpha = 0.6) + 
+  facet_wrap(~common_name, ncol = 3, scales = "free_y") + 
+  labs(x = "Date of survey (2022)",
+       y = "Number of acoustic detections in a 10-minute recording",
+       color = "Site")+
+  scale_color_manual(values=met.brewer("Homer2", 4))+
+  theme_minimal()+
+  theme(legend.position = "bottom")
+ggsave(filename = "figs/acou_det-by-date_2022.jpg", width = 10, height = 10, units = "in", dpi = 300)
+```
+![Acoustic detections 2022 - phenology](figs/acou_det-by-date_2022.jpg)
+
+And for 2023:
+```{r}
+acoust_count_summary |>
+  mutate(year = year(date)) |>
+  filter(year == 2023) |>
+  ggplot(aes(x = date, y = counts, color = site_name))+
+  geom_segment(aes(y = 0, yend = counts), alpha = 0.3) + 
+  geom_point(alpha = 0.6) + 
+  facet_wrap(~common_name, ncol = 3) + 
+  labs(x = "Date of survey (2023)",
+       y = "Number of individuals counted in a 10-minute point count",
+       color = "Site")+
+  scale_color_manual(values=met.brewer("Homer2", 4))+
+  theme_minimal()+
+  theme(legend.position = "bottom")
+ggsave(filename = "figs/counts-by-date_2023.jpg", width = 10, height = 10, units = "in", dpi = 300)
+```
+![Counts 2023 - phenology](figs/counts-by-date_2023.jpg)
+
+```{r}
+acoust_count_summary |>
+  mutate(year = year(date)) |>
+  filter(year == 2023) |>
+  ggplot(aes(x = date, y = acous_detections, color = site_name))+
+  geom_segment(aes(y = 0, yend = acous_detections), alpha = 0.3) + 
+  geom_point(alpha = 0.6) + 
+  facet_wrap(~common_name, ncol = 3, scales = "free_y") + 
+  labs(x = "Date of survey (2023)",
+       y = "Number of acoustic detections in a 10-minute recording",
+       color = "Site")+
+  scale_color_manual(values=met.brewer("Homer2", 4))+
+  theme_minimal()+
+  theme(legend.position = "bottom")
+ggsave(filename = "figs/acou_det-by-date_2023.jpg", width = 10, height = 10, units = "in", dpi = 300)
+```
+![Acoustic detections 2023 - phenology](figs/acou_det-by-date_2023.jpg)
+
+These figures serve to see that the date of visit have a more clear effect in acoustic detections than on counts. We can incorporate these covariates in a hierarchical model.
+
+These figures also allow to estimate the variance-to-mean ratio (VMR) of our two data sources (counts and acoustic detections) to select a family distribution accordingly. Recall a simple, clear table of VMR values:
+```{r}
+VMR_table <- data.frame(
+  Distribution = c("Constant random variable", "Binomial","Poisson", "Negative binomial"),
+  VMR = c("VMR = 0", "0<VMR<1", "VMR = 1", "VMR>1")
+)
+knitr::kable(VMR_table)
+```
+
+So, estimating these VMR per species:
+```{r}
+acoust_count_summary |>
+  group_by(common_name) |>
+  summarise(meanCounts = mean(counts),
+            varCounts = var(counts), 
+            VMR_counts = varCounts/meanCounts,
+            meanAcouDet = mean(acous_detections),
+            varAcouDet = var(acous_detections), 
+            VMR_AcouDet = varAcouDet/meanAcouDet) |> #summary()
+  as.data.frame() # to see all the table
+```
+
+We can see that VMR_counts is between 0 and 1, while VMR_AcousticDetection > 1. These ranges suggest using a Binomial and a Negative binomial distributions, respectively, in the observation process.
+
+## Hierarchical model for counts with two observation processes
+
+### State process for each morning
+
+Assuming that every morning of sampling we find a latent number of individuals in each site (including several point counts?) that fluctuates around a mean stationary number, we can see some similarities with a Stochastic Gompertz State Space population dynamics model, which in continuous time follows a Gaussian (Ornstein-Uhlenbeck, OU) diffusion dynamic.
+
+Let's model the latent process of log-counts $X_{i,t} = \ln(C_{i,t})$ for species $i$ in time $t$ (sampling point count) in a site $m$. We can simplify this (for now) by only working in a site ($m = 1$; Katahdin Woods and Waters) and four species example ($i = 1,2,3,4$; Ovenbird - OVEN, Pine Warbler - PAWA, Red-eyed Vireo - REVI, Scarlet Tanager - SCTA). On the logarithmic scale, the process becomes linear and follows an autoregressive model of order 1 (note we are not including the index $m$ for now):
+
+$$
+X_{i,t+1} = a_i + c_i * X_{i,t} + \epsilon_{i,t}; ~ \epsilon \sim \text{Normal}(0,\sigma_i^2)
+$$
+where $a_i$ control the drift (equivalent to the growth rate) of each species, $c_i$ controls the mean-reverting dynamic (such as the strength of density dependence, $c = 1 + b$), and $\epsilon_{i,t}$ captures stochasticity in the process, distributed as a normal random variable with some noise of the process $\sigma_i^2$. In the long-run, we can estimate the mean of the log-counts as a function of the control drift and mean-reverting dynamic:
+
+$$
+\text{E}[X_{\infty,i}] = \frac{a_i}{1-c_i}
+$$
+
+Also the variance of the log-counts is given by the ratio of variance in stochasticity and the square of the mean-reverting dynamic:
+
+$$
+\text{Var}[X_{\infty,i}] = \frac{\sigma_i^2}{1-c_i^2}
+$$
+
+However, how to deal with Jansen's inequality?! 
+
+$$
+e^{(\text{E}[X_\infty])} \leq \text{E}[e^{(X_\infty)}]
+$$
+
+We can estimate the long-run mean count value on the original scale by adding half of the variance, which is our expected counts per species $i$:
+
+$$
+\text{E}[C_{\infty, i}] = e^{(\text{E}[X_{\infty, i}] + (0.5 \times \text{Var}[X_{\infty, i}]))}
+$$
+
+### Observation process for each morning from point counts
+
+The VMR_counts revealed underdispersion, so we can us a Binomial distribution for this observation process:
+
+$$
+y_{i,t}^{counts} | C_{i,t} \sim \text{Binomial}(\exp(X_{i,t}),~p_i)
+$$
+where $y_{i,t}^{counts}$ is the observed counts from point counts sampling, $\exp(X_{i,t}) = e^{X_{i,t}}$ came from the state process and $p_{i}$ is the detection probability per species.
+
+### Observation process for each morning from acoustic detections
+
+The VMR_AcousticDetection revealed overdispersion, so we can use a Negative Binomial distribution for this observation process:
+
+$$
+y_{i,t}^{acoust} \sim \text{Negative Binomial}(\mu_{i,t}, k_i)
+$$
+where $y_{i,t}^{acoust}$ is the observed acoustic detections from sampling point (that overlap with point counts), $\mu_{i,t}$ is the expected number of acoustic detections per species per time (sampling) and $k_i$ is the overdispersion parameter per species. Then, we can link the expected number of acoustic detections per species ($\mu_{i,t}$) with the state process under a log-linear model:
+
+$$
+\log(\mu_{i,t}) = \alpha_i + \gamma_{i} X_{i,t}
+$$
+where $\alpha_i$ is a species-level intercept and $\gamma_{i}$ is the scaling parameter with the latent log-abundance $X_{i,t}$.
+
+### Coding
+
+Create index values. In this example I only use two species, to test the code.
+
+```{r}
+acoust_count_nimble <- acoust_count_summary |>
+  # four examples in a single site
+  filter(common_name %in% c("Ovenbird","Pine Warbler", "Red-eyed Vireo",
+                            "Scarlet Tanager"),
+         site_name == "Katahdin Woods and Waters") |> 
+  # Organize the data for NIMBLE
+  mutate(
+    species_id = as.integer(factor(common_name)),
+    site_id_num = as.integer(factor(site_id)),
+    time_id = as.integer(factor(paste(visit_number, time_window, sep = "_"))),
+    log_acoust = log(acous_detections + 1),  # avoid log(0)
+    log_counts = log(counts +1)  # avoid log(0)
+  ) |>
+  arrange(species_id, time_id)
+```
+
+```{r}
+code <- nimbleCode({
+  #Priors
+  # Species level
+  for (i in 1:N_species) {
+    x0[i] ~ dnorm(0, 0.01)        # Prior mean for initial abundance
+    p[i] ~ dunif(0,1)             # Detection probability
+    alpha[i] ~ dnorm(0, 0.1)      # Intercept for acoustic detection model
+    a[i] ~ dnorm(0, 1)            # Drift term in OU process (ep. pop growth rate)
+    c[i] ~ dunif(0.05, 0.95)      # mean-reverting dynamic (eq. Density dependence strength)
+    sigma_sqr[i] ~ dunif(0, 10)   # Process variance
+    gamma[i] ~ dnorm(0, 1)        # Scaling of latent abundance in acoustic model
+    k[i] ~ dunif(0, 100)          # Overdispersion for acoustic detections
+  }
+
+  #Latent process (OU-Gompertz)
+
+  for (i in 1:N_species) {
+    X[i, 1] ~ dnorm(x0[i], 1)        # Initial latent abundance per species
+  }
+  for (t in 2:N_time) {
+    for (i in 1:N_species) {
+      eps[i, t-1] ~ dnorm(0, sigma_sqr[i])  # Environmental noise
+      X[i, t] <- a[i] + c[i] * X[i, t-1] + eps[i, t-1]  # OU update
+    }
+  }
+  
+  #Observation models
+  for (n in 1:N_obs) {
+    # Counts from point counts observations
+    counts[n] ~ dbin(p[species_id[n]], X[species_id[n], time_id[n]])
+
+    # Acoustic detections in 10-minutes recordings simultaneously sampled
+    log_mu[n] <- alpha[species_id[n]] + gamma[species_id[n]] * X[species_id[n], time_id[n]]
+    mu[n] <- exp(log_mu[n])
+    acous_detections[n] ~ dnegbin(mu[n], k[species_id[n]])
+  }
+  
+  # Derived quantities
+  for (i in 1:N_species) {
+    E_X[i] <- a[i] / (1 - c[i])
+    Var_X[i] <- sigma_sqr[i] / (1 - c[i]^2)
+    E_C[i] <- exp(E_X[i] + 0.5 * Var_X[i])
+  }
+})
+
+```
+
+Compile the code
+
+```{r eval=FALSE}
+# Change to eval=FALSE
+# Bundle data for Nimble
+str(nimble_data <- list(N_species = length(unique(acoust_count_nimble$species_id)),
+                        N_time = max(acoust_count_nimble$time_id),
+                        N_obs = nrow(acoust_count_nimble),
+                        species_id = acoust_count_nimble$species_id,
+                        time_id = acoust_count_nimble$time_id,
+                        counts = acoust_count_nimble$log_counts,
+                        acous_detections = acoust_count_nimble$log_acoust
+))
+
+# initial values
+# For the matrix X, we have to initiate with a full matrix, even if some combination are missing
+X_init_df <- expand.grid(
+  species_id = 1:length(unique(acoust_count_nimble$species_id)), 
+  time_id = 1:max(acoust_count_nimble$time_id)
+  ) |>
+  left_join(acoust_count_nimble |>
+              select(species_id, time_id, log_counts),
+            by = c("species_id", "time_id")) |>
+  mutate(log_counts = ifelse(is.na(log_counts), 0, log_counts))  # fill missing with 0
+
+# Reshape to matrix
+X_init <- X_init_df |>
+  pivot_wider(names_from = time_id,
+              values_from = log_counts,
+              values_fn = mean) |>
+  dplyr::select(!c(species_id)) |>
+  as.matrix()
+
+# initial values - using fixed initial values to check model structure, then we can change to random
+inits <- function() {
+  N_species <- length(unique(acoust_count_nimble$species_id))
+  list(
+    X = X_init,
+    x0 = rep(1, N_species), 
+    alpha = rep(1, N_species), 
+    a = rep(0.1, N_species), 
+    c = rep(0.9, N_species), # mean-reverting 
+    sigma_sqr = rep(0.5, N_species), 
+    gamma = rep(1, N_species), 
+    k = rep(10, N_species)
+  )}
+
+# monitoring parameters
+pars <- c("alpha", "a", "c", "sigma_sqr", 
+          "X","p",
+          "gamma", "k", "mu",
+          "E_C")
+nimble_AcoustiCounts <- nimbleMCMC(code = code,
+                          constants = nimble_data, 
+                          inits = inits, 
+                          monitors = pars, 
+                          nchains = 3, 
+                          niter = 3000, 
+                          nburnin = 1000,
+                          thin = 3,
+                          samplesAsCodaMCMC = TRUE,
+                          WAIC = TRUE)
+saveRDS(nimble_AcoustiCounts, "data/HM_four_spp.RDS")
+```
+
+```{r}
+nimble_AcoustiCounts <- readRDS("data/HM_four_spp.RDS")
+#summary(nimble_AcoustiCounts$samples)
+traceplot(nimble_AcoustiCounts$samples[,"E_C[1]"], ylab = "Expected abundance OVEN")
+traceplot(nimble_AcoustiCounts$samples[,"E_C[2]"], ylab = "Expected abundance PIWA")
+traceplot(nimble_AcoustiCounts$samples[,"E_C[4]"], ylab = "Expected abundance REVI")
+traceplot(nimble_AcoustiCounts$samples[,"E_C[3]"], ylab = "Expected abundance SCTA")
+traceplot(nimble_AcoustiCounts$samples[,"p[1]"], ylab = "Detection probability OVEN")
+traceplot(nimble_AcoustiCounts$samples[,"p[2]"], ylab = "Detection probability PIWA")
+traceplot(nimble_AcoustiCounts$samples[,"p[4]"], ylab = "Detection probability REVI")
+traceplot(nimble_AcoustiCounts$samples[,"p[3]"], ylab = "Detection probability SCTA")
+```
+
+Looking at the output of the model - expected abundance of four species in Katahdin Woods and Waters
+
+```{r}
+post_1 <- as.matrix(nimble_AcoustiCounts$samples)
+
+OVEN <- quantile(post_1[,"E_C[1]"], c(0.025, 0.5, 0.975))
+PIWA <- quantile(post_1[,"E_C[2]"], c(0.025, 0.5, 0.975))
+REVI <- quantile(post_1[,"E_C[3]"], c(0.025, 0.5, 0.975))
+SCTA <- quantile(post_1[,"E_C[4]"], c(0.025, 0.5, 0.975))
+
+ExpectedCounts <- as.data.frame(rbind(OVEN, PIWA, REVI, SCTA)) |>
+  mutate(Species = c("Ovenbird", "Pine Warbler", "Red-eyed Vireo", "Scarlet Tanager"))
+
+ggplot(ExpectedCounts, aes(x = Species, y = `50%`))+
+  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2) +
+  scale_y_continuous(limits = c(0,50))+
+  labs(y = "Expected counts", 
+       title = "Katahdin Woods and Waters")+
+  geom_point() +
+  theme_minimal()
+ggsave(filename = "figs/E_counts-site1-KWW.jpg", width = 10, height = 5, units = "in", dpi = 300)
+```
+![Expected counts for 4 species in KWW](figs/E_counts-site1-KWW.jpg)
