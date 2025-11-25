@@ -1,6 +1,6 @@
 --- 
 knit: "bookdown::render_book"
-title: "Source code and supporting information for _Predicting abundances from acoustic data: New Hampshire Birsd_"
+title: "Source code and supporting information for _Predicting abundances from acoustic data: New Hampshire Birds_"
 author:
     - Vijay Ramesh
     - Pooja Panwar

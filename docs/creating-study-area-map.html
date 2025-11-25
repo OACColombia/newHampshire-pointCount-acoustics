@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birsd</title>
-  <meta name="description" content="Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birsd" />
+  <title>Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birds</title>
+  <meta name="description" content="Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birds" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birsd" />
+  <meta property="og:title" content="Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birds" />
   <meta property="og:type" content="book" />
   
   
   <meta name="github-repo" content="vjjan91/newHampshire-pointCount-acoustics" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birsd" />
+  <meta name="twitter:title" content="Section 4 Creating study area map | Source code and supporting information for Predicting abundances from acoustic data: New Hampshire Birds" />
   
   
   
@@ -173,7 +173,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.5" data-path="creating-study-area-map.html"><a href="creating-study-area-map.html#hubbard-brook"><i class="fa fa-check"></i><b>4.5</b> Hubbard Brook</a></li>
 <li class="chapter" data-level="4.6" data-path="creating-study-area-map.html"><a href="creating-study-area-map.html#katahdin-woods-and-waters"><i class="fa fa-check"></i><b>4.6</b> Katahdin Woods and Waters</a></li>
 <li class="chapter" data-level="4.7" data-path="creating-study-area-map.html"><a href="creating-study-area-map.html#marsh-billings"><i class="fa fa-check"></i><b>4.7</b> Marsh Billings</a></li>
-<li class="chapter" data-level="4.8" data-path="creating-study-area-map.html"><a href="creating-study-area-map.html#create-visualization"><i class="fa fa-check"></i><b>4.8</b> Create visualization</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="abundance-vs.-acoustic-detections.html"><a href="abundance-vs.-acoustic-detections.html"><i class="fa fa-check"></i><b>5</b> Abundance vs. acoustic detections</a>
 <ul>
@@ -196,13 +195,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="7" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html"><i class="fa fa-check"></i><b>7</b> Hierarchical model approach</a>
 <ul>
 <li class="chapter" data-level="7.1" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#packages"><i class="fa fa-check"></i><b>7.1</b> Packages</a></li>
-<li class="chapter" data-level="7.2" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#loading-and-exploring-data"><i class="fa fa-check"></i><b>7.2</b> Loading and exploring data</a></li>
+<li class="chapter" data-level="7.2" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#loading-and-exploring-data"><i class="fa fa-check"></i><b>7.2</b> Loading and exploring data</a>
+<ul>
+<li class="chapter" data-level="7.2.1" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#figures-of-the-data"><i class="fa fa-check"></i><b>7.2.1</b> Figures of the data</a></li>
+</ul></li>
 <li class="chapter" data-level="7.3" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#hierarchical-model-for-counts-with-two-observation-processes"><i class="fa fa-check"></i><b>7.3</b> Hierarchical model for counts with two observation processes</a>
 <ul>
-<li class="chapter" data-level="7.3.1" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#state-process-for-each-morning"><i class="fa fa-check"></i><b>7.3.1</b> State process for each morning</a></li>
-<li class="chapter" data-level="7.3.2" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#observation-process-for-each-morning-from-point-counts"><i class="fa fa-check"></i><b>7.3.2</b> Observation process for each morning from point counts</a></li>
-<li class="chapter" data-level="7.3.3" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#observation-process-for-each-morning-from-acoustic-detections"><i class="fa fa-check"></i><b>7.3.3</b> Observation process for each morning from acoustic detections</a></li>
-<li class="chapter" data-level="7.3.4" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#coding"><i class="fa fa-check"></i><b>7.3.4</b> Coding</a></li>
+<li class="chapter" data-level="7.3.1" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#state-process-for-morning-expected-counts"><i class="fa fa-check"></i><b>7.3.1</b> State process for morning expected counts</a></li>
+<li class="chapter" data-level="7.3.2" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#observation-process-for-morning-point-counts"><i class="fa fa-check"></i><b>7.3.2</b> Observation process for morning point counts</a></li>
+<li class="chapter" data-level="7.3.3" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#observation-process-for-morning-acoustic-detections"><i class="fa fa-check"></i><b>7.3.3</b> Observation process for morning acoustic detections</a></li>
+<li class="chapter" data-level="7.3.4" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#coding-observation-point-counts"><i class="fa fa-check"></i><b>7.3.4</b> Coding Observation point counts</a></li>
+<li class="chapter" data-level="7.3.5" data-path="hierarchical-model-approach.html"><a href="hierarchical-model-approach.html#coding-acoustic-detections-counts"><i class="fa fa-check"></i><b>7.3.5</b> Coding Acoustic detections counts</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -214,7 +217,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Source code and supporting information for <em>Predicting abundances from acoustic data: New Hampshire Birsd</em></a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Source code and supporting information for <em>Predicting abundances from acoustic data: New Hampshire Birds</em></a>
           </h1>
         </div>
 
@@ -593,227 +596,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb20-70"><a href="creating-study-area-map.html#cb20-70" tabindex="-1"></a>  )</span>
 <span id="cb20-71"><a href="creating-study-area-map.html#cb20-71" tabindex="-1"></a></span>
 <span id="cb20-72"><a href="creating-study-area-map.html#cb20-72" tabindex="-1"></a>mbi_with_inset</span></code></pre></div>
-</div>
-<div id="create-visualization" class="section level2 hasAnchor" number="4.8">
-<h2><span class="header-section-number">4.8</span> Create visualization<a href="creating-study-area-map.html#create-visualization" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="creating-study-area-map.html#cb21-1" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb21-2"><a href="creating-study-area-map.html#cb21-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb21-3"><a href="creating-study-area-map.html#cb21-3" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb21-4"><a href="creating-study-area-map.html#cb21-4" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
-<span id="cb21-5"><a href="creating-study-area-map.html#cb21-5" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
-<span id="cb21-6"><a href="creating-study-area-map.html#cb21-6" tabindex="-1"></a><span class="fu">library</span>(ggspatial)</span>
-<span id="cb21-7"><a href="creating-study-area-map.html#cb21-7" tabindex="-1"></a></span>
-<span id="cb21-8"><a href="creating-study-area-map.html#cb21-8" tabindex="-1"></a><span class="co"># Get state data</span></span>
-<span id="cb21-9"><a href="creating-study-area-map.html#cb21-9" tabindex="-1"></a>usa <span class="ot">&lt;-</span> <span class="fu">ne_states</span>(<span class="at">country =</span> <span class="st">&quot;United States of America&quot;</span>, <span class="at">returnclass =</span> <span class="st">&quot;sf&quot;</span>)</span>
-<span id="cb21-10"><a href="creating-study-area-map.html#cb21-10" tabindex="-1"></a>northeast <span class="ot">&lt;-</span> usa[usa<span class="sc">$</span>name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Maine&quot;</span>, <span class="st">&quot;New Hampshire&quot;</span>, <span class="st">&quot;Vermont&quot;</span>, <span class="st">&quot;Massachusetts&quot;</span>, <span class="st">&quot;Connecticut&quot;</span>, <span class="st">&quot;Rhode Island&quot;</span>), ]</span>
-<span id="cb21-11"><a href="creating-study-area-map.html#cb21-11" tabindex="-1"></a>northeast <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(northeast, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
-<span id="cb21-12"><a href="creating-study-area-map.html#cb21-12" tabindex="-1"></a></span>
-<span id="cb21-13"><a href="creating-study-area-map.html#cb21-13" tabindex="-1"></a><span class="co"># Enhanced panel function with consistent sizing and better spacing</span></span>
-<span id="cb21-14"><a href="creating-study-area-map.html#cb21-14" tabindex="-1"></a>create_enhanced_panel <span class="ot">&lt;-</span> <span class="cf">function</span>(boundary, points, title, highlight_state, <span class="at">inset_position =</span> <span class="st">&quot;bottom_right&quot;</span>) {</span>
-<span id="cb21-15"><a href="creating-study-area-map.html#cb21-15" tabindex="-1"></a>  </span>
-<span id="cb21-16"><a href="creating-study-area-map.html#cb21-16" tabindex="-1"></a>  <span class="co"># Ensure same CRS</span></span>
-<span id="cb21-17"><a href="creating-study-area-map.html#cb21-17" tabindex="-1"></a>  boundary <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(boundary, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
-<span id="cb21-18"><a href="creating-study-area-map.html#cb21-18" tabindex="-1"></a>  points <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(points, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
-<span id="cb21-19"><a href="creating-study-area-map.html#cb21-19" tabindex="-1"></a>  </span>
-<span id="cb21-20"><a href="creating-study-area-map.html#cb21-20" tabindex="-1"></a>  <span class="co"># Fix validity check</span></span>
-<span id="cb21-21"><a href="creating-study-area-map.html#cb21-21" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">st_is_valid</span>(boundary))) {</span>
-<span id="cb21-22"><a href="creating-study-area-map.html#cb21-22" tabindex="-1"></a>    boundary <span class="ot">&lt;-</span> <span class="fu">st_make_valid</span>(boundary)</span>
-<span id="cb21-23"><a href="creating-study-area-map.html#cb21-23" tabindex="-1"></a>  }</span>
-<span id="cb21-24"><a href="creating-study-area-map.html#cb21-24" tabindex="-1"></a>  </span>
-<span id="cb21-25"><a href="creating-study-area-map.html#cb21-25" tabindex="-1"></a>  <span class="co"># Union boundary if it has multiple features</span></span>
-<span id="cb21-26"><a href="creating-study-area-map.html#cb21-26" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(boundary) <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
-<span id="cb21-27"><a href="creating-study-area-map.html#cb21-27" tabindex="-1"></a>    boundary <span class="ot">&lt;-</span> <span class="fu">st_union</span>(boundary)</span>
-<span id="cb21-28"><a href="creating-study-area-map.html#cb21-28" tabindex="-1"></a>    boundary <span class="ot">&lt;-</span> <span class="fu">st_sf</span>(<span class="at">geometry =</span> boundary)</span>
-<span id="cb21-29"><a href="creating-study-area-map.html#cb21-29" tabindex="-1"></a>  }</span>
-<span id="cb21-30"><a href="creating-study-area-map.html#cb21-30" tabindex="-1"></a>  </span>
-<span id="cb21-31"><a href="creating-study-area-map.html#cb21-31" tabindex="-1"></a>  <span class="co"># Filter points within boundary</span></span>
-<span id="cb21-32"><a href="creating-study-area-map.html#cb21-32" tabindex="-1"></a>  boundary_buffer <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(boundary, <span class="at">dist =</span> <span class="fl">0.01</span>)</span>
-<span id="cb21-33"><a href="creating-study-area-map.html#cb21-33" tabindex="-1"></a>  nearby_points <span class="ot">&lt;-</span> <span class="fu">st_filter</span>(points, boundary_buffer)</span>
-<span id="cb21-34"><a href="creating-study-area-map.html#cb21-34" tabindex="-1"></a>  </span>
-<span id="cb21-35"><a href="creating-study-area-map.html#cb21-35" tabindex="-1"></a>  <span class="co"># Get tight bounding box around polygon for better zoom</span></span>
-<span id="cb21-36"><a href="creating-study-area-map.html#cb21-36" tabindex="-1"></a>  polygon_bbox <span class="ot">&lt;-</span> <span class="fu">st_bbox</span>(boundary)</span>
-<span id="cb21-37"><a href="creating-study-area-map.html#cb21-37" tabindex="-1"></a>  </span>
-<span id="cb21-38"><a href="creating-study-area-map.html#cb21-38" tabindex="-1"></a>  <span class="co"># Calculate ranges for consistent scaling</span></span>
-<span id="cb21-39"><a href="creating-study-area-map.html#cb21-39" tabindex="-1"></a>  x_range <span class="ot">&lt;-</span> polygon_bbox[<span class="dv">3</span>] <span class="sc">-</span> polygon_bbox[<span class="dv">1</span>]</span>
-<span id="cb21-40"><a href="creating-study-area-map.html#cb21-40" tabindex="-1"></a>  y_range <span class="ot">&lt;-</span> polygon_bbox[<span class="dv">4</span>] <span class="sc">-</span> polygon_bbox[<span class="dv">2</span>]</span>
-<span id="cb21-41"><a href="creating-study-area-map.html#cb21-41" tabindex="-1"></a>  </span>
-<span id="cb21-42"><a href="creating-study-area-map.html#cb21-42" tabindex="-1"></a>  <span class="co"># Make the plot area square-ish and ensure adequate white space</span></span>
-<span id="cb21-43"><a href="creating-study-area-map.html#cb21-43" tabindex="-1"></a>  max_range <span class="ot">&lt;-</span> <span class="fu">max</span>(x_range, y_range)</span>
-<span id="cb21-44"><a href="creating-study-area-map.html#cb21-44" tabindex="-1"></a>  </span>
-<span id="cb21-45"><a href="creating-study-area-map.html#cb21-45" tabindex="-1"></a>  <span class="co"># Center the polygon and create consistent plot bounds</span></span>
-<span id="cb21-46"><a href="creating-study-area-map.html#cb21-46" tabindex="-1"></a>  center_x <span class="ot">&lt;-</span> (polygon_bbox[<span class="dv">1</span>] <span class="sc">+</span> polygon_bbox[<span class="dv">3</span>]) <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb21-47"><a href="creating-study-area-map.html#cb21-47" tabindex="-1"></a>  center_y <span class="ot">&lt;-</span> (polygon_bbox[<span class="dv">2</span>] <span class="sc">+</span> polygon_bbox[<span class="dv">4</span>]) <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb21-48"><a href="creating-study-area-map.html#cb21-48" tabindex="-1"></a>  </span>
-<span id="cb21-49"><a href="creating-study-area-map.html#cb21-49" tabindex="-1"></a>  <span class="co"># Create consistent plot bounds (square) with enough margin</span></span>
-<span id="cb21-50"><a href="creating-study-area-map.html#cb21-50" tabindex="-1"></a>  margin_factor <span class="ot">&lt;-</span> <span class="fl">0.4</span>  <span class="co"># 40% margin around polygon</span></span>
-<span id="cb21-51"><a href="creating-study-area-map.html#cb21-51" tabindex="-1"></a>  half_size <span class="ot">&lt;-</span> (max_range <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> margin_factor)) <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb21-52"><a href="creating-study-area-map.html#cb21-52" tabindex="-1"></a>  </span>
-<span id="cb21-53"><a href="creating-study-area-map.html#cb21-53" tabindex="-1"></a>  plot_bbox <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb21-54"><a href="creating-study-area-map.html#cb21-54" tabindex="-1"></a>    <span class="at">xmin =</span> center_x <span class="sc">-</span> half_size,</span>
-<span id="cb21-55"><a href="creating-study-area-map.html#cb21-55" tabindex="-1"></a>    <span class="at">ymin =</span> center_y <span class="sc">-</span> half_size,</span>
-<span id="cb21-56"><a href="creating-study-area-map.html#cb21-56" tabindex="-1"></a>    <span class="at">xmax =</span> center_x <span class="sc">+</span> half_size,</span>
-<span id="cb21-57"><a href="creating-study-area-map.html#cb21-57" tabindex="-1"></a>    <span class="at">ymax =</span> center_y <span class="sc">+</span> half_size</span>
-<span id="cb21-58"><a href="creating-study-area-map.html#cb21-58" tabindex="-1"></a>  )</span>
-<span id="cb21-59"><a href="creating-study-area-map.html#cb21-59" tabindex="-1"></a>  </span>
-<span id="cb21-60"><a href="creating-study-area-map.html#cb21-60" tabindex="-1"></a>  <span class="co"># Set inset coordinates based on position</span></span>
-<span id="cb21-61"><a href="creating-study-area-map.html#cb21-61" tabindex="-1"></a>  <span class="cf">if</span> (inset_position <span class="sc">==</span> <span class="st">&quot;bottom_right&quot;</span>) {</span>
-<span id="cb21-62"><a href="creating-study-area-map.html#cb21-62" tabindex="-1"></a>    inset_left <span class="ot">&lt;-</span> <span class="fl">0.72</span></span>
-<span id="cb21-63"><a href="creating-study-area-map.html#cb21-63" tabindex="-1"></a>    inset_bottom <span class="ot">&lt;-</span> <span class="fl">0.08</span></span>
-<span id="cb21-64"><a href="creating-study-area-map.html#cb21-64" tabindex="-1"></a>    inset_right <span class="ot">&lt;-</span> <span class="fl">0.92</span></span>
-<span id="cb21-65"><a href="creating-study-area-map.html#cb21-65" tabindex="-1"></a>    inset_top <span class="ot">&lt;-</span> <span class="fl">0.28</span></span>
-<span id="cb21-66"><a href="creating-study-area-map.html#cb21-66" tabindex="-1"></a>  } <span class="cf">else</span> { <span class="co"># top_right</span></span>
-<span id="cb21-67"><a href="creating-study-area-map.html#cb21-67" tabindex="-1"></a>    inset_left <span class="ot">&lt;-</span> <span class="fl">0.72</span></span>
-<span id="cb21-68"><a href="creating-study-area-map.html#cb21-68" tabindex="-1"></a>    inset_bottom <span class="ot">&lt;-</span> <span class="fl">0.72</span></span>
-<span id="cb21-69"><a href="creating-study-area-map.html#cb21-69" tabindex="-1"></a>    inset_right <span class="ot">&lt;-</span> <span class="fl">0.92</span></span>
-<span id="cb21-70"><a href="creating-study-area-map.html#cb21-70" tabindex="-1"></a>    inset_top <span class="ot">&lt;-</span> <span class="fl">0.92</span></span>
-<span id="cb21-71"><a href="creating-study-area-map.html#cb21-71" tabindex="-1"></a>  }</span>
-<span id="cb21-72"><a href="creating-study-area-map.html#cb21-72" tabindex="-1"></a>  </span>
-<span id="cb21-73"><a href="creating-study-area-map.html#cb21-73" tabindex="-1"></a>  <span class="co"># Main plot with consistent sizing</span></span>
-<span id="cb21-74"><a href="creating-study-area-map.html#cb21-74" tabindex="-1"></a>  main_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb21-75"><a href="creating-study-area-map.html#cb21-75" tabindex="-1"></a>    <span class="fu">geom_sf</span>(<span class="at">data =</span> boundary, <span class="at">fill =</span> <span class="st">&quot;lightblue&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>, </span>
-<span id="cb21-76"><a href="creating-study-area-map.html#cb21-76" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb21-77"><a href="creating-study-area-map.html#cb21-77" tabindex="-1"></a>    <span class="fu">geom_sf</span>(<span class="at">data =</span> nearby_points, <span class="at">color =</span> <span class="st">&quot;brown&quot;</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.9</span>) <span class="sc">+</span>  <span class="co"># Slightly larger for visibility</span></span>
-<span id="cb21-78"><a href="creating-study-area-map.html#cb21-78" tabindex="-1"></a>    <span class="fu">annotation_north_arrow</span>(<span class="at">location =</span> <span class="st">&quot;tl&quot;</span>, <span class="at">which_north =</span> <span class="st">&quot;true&quot;</span>, </span>
-<span id="cb21-79"><a href="creating-study-area-map.html#cb21-79" tabindex="-1"></a>                          <span class="at">pad_x =</span> <span class="fu">unit</span>(<span class="fl">0.2</span>, <span class="st">&quot;in&quot;</span>), <span class="at">pad_y =</span> <span class="fu">unit</span>(<span class="fl">0.2</span>, <span class="st">&quot;in&quot;</span>),  <span class="co"># Even more padding</span></span>
-<span id="cb21-80"><a href="creating-study-area-map.html#cb21-80" tabindex="-1"></a>                          <span class="at">height =</span> <span class="fu">unit</span>(<span class="fl">0.7</span>, <span class="st">&quot;cm&quot;</span>), <span class="at">width =</span> <span class="fu">unit</span>(<span class="fl">0.7</span>, <span class="st">&quot;cm&quot;</span>),</span>
-<span id="cb21-81"><a href="creating-study-area-map.html#cb21-81" tabindex="-1"></a>                          <span class="at">style =</span> <span class="fu">north_arrow_fancy_orienteering</span>(</span>
-<span id="cb21-82"><a href="creating-study-area-map.html#cb21-82" tabindex="-1"></a>                            <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>, <span class="st">&quot;white&quot;</span>),</span>
-<span id="cb21-83"><a href="creating-study-area-map.html#cb21-83" tabindex="-1"></a>                            <span class="at">line_col =</span> <span class="st">&quot;black&quot;</span>,</span>
-<span id="cb21-84"><a href="creating-study-area-map.html#cb21-84" tabindex="-1"></a>                            <span class="at">text_family =</span> <span class="st">&quot;Century Gothic&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb21-85"><a href="creating-study-area-map.html#cb21-85" tabindex="-1"></a>    <span class="fu">annotation_scale</span>(<span class="at">location =</span> <span class="st">&quot;bl&quot;</span>, <span class="at">width_hint =</span> <span class="fl">0.2</span>,  <span class="co"># Smaller scale bar</span></span>
-<span id="cb21-86"><a href="creating-study-area-map.html#cb21-86" tabindex="-1"></a>                    <span class="at">pad_x =</span> <span class="fu">unit</span>(<span class="fl">0.2</span>, <span class="st">&quot;in&quot;</span>), <span class="at">pad_y =</span> <span class="fu">unit</span>(<span class="fl">0.2</span>, <span class="st">&quot;in&quot;</span>),  <span class="co"># More padding</span></span>
-<span id="cb21-87"><a href="creating-study-area-map.html#cb21-87" tabindex="-1"></a>                    <span class="at">height =</span> <span class="fu">unit</span>(<span class="fl">0.12</span>, <span class="st">&quot;cm&quot;</span>),</span>
-<span id="cb21-88"><a href="creating-study-area-map.html#cb21-88" tabindex="-1"></a>                    <span class="at">text_family =</span> <span class="st">&quot;Century Gothic&quot;</span>, <span class="at">text_col =</span> <span class="st">&quot;black&quot;</span>) <span class="sc">+</span></span>
-<span id="cb21-89"><a href="creating-study-area-map.html#cb21-89" tabindex="-1"></a>    <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(plot_bbox[<span class="dv">1</span>], plot_bbox[<span class="dv">3</span>]), </span>
-<span id="cb21-90"><a href="creating-study-area-map.html#cb21-90" tabindex="-1"></a>             <span class="at">ylim =</span> <span class="fu">c</span>(plot_bbox[<span class="dv">2</span>], plot_bbox[<span class="dv">4</span>]), </span>
-<span id="cb21-91"><a href="creating-study-area-map.html#cb21-91" tabindex="-1"></a>             <span class="at">expand =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb21-92"><a href="creating-study-area-map.html#cb21-92" tabindex="-1"></a>    <span class="fu">theme_void</span>() <span class="sc">+</span></span>
-<span id="cb21-93"><a href="creating-study-area-map.html#cb21-93" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
-<span id="cb21-94"><a href="creating-study-area-map.html#cb21-94" tabindex="-1"></a>      <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">12</span>, <span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, </span>
-<span id="cb21-95"><a href="creating-study-area-map.html#cb21-95" tabindex="-1"></a>                               <span class="at">family =</span> <span class="st">&quot;Century Gothic&quot;</span>, <span class="at">margin =</span> <span class="fu">margin</span>(<span class="at">b =</span> <span class="dv">10</span>)),</span>
-<span id="cb21-96"><a href="creating-study-area-map.html#cb21-96" tabindex="-1"></a>      <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">linewidth =</span> <span class="dv">1</span>),</span>
-<span id="cb21-97"><a href="creating-study-area-map.html#cb21-97" tabindex="-1"></a>      <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>),</span>
-<span id="cb21-98"><a href="creating-study-area-map.html#cb21-98" tabindex="-1"></a>      <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;white&quot;</span>),</span>
-<span id="cb21-99"><a href="creating-study-area-map.html#cb21-99" tabindex="-1"></a>      <span class="at">aspect.ratio =</span> <span class="dv">1</span>  <span class="co"># Force square aspect ratio</span></span>
-<span id="cb21-100"><a href="creating-study-area-map.html#cb21-100" tabindex="-1"></a>    ) <span class="sc">+</span></span>
-<span id="cb21-101"><a href="creating-study-area-map.html#cb21-101" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> title)</span>
-<span id="cb21-102"><a href="creating-study-area-map.html#cb21-102" tabindex="-1"></a>  </span>
-<span id="cb21-103"><a href="creating-study-area-map.html#cb21-103" tabindex="-1"></a>  <span class="co"># Create inset with black dot</span></span>
-<span id="cb21-104"><a href="creating-study-area-map.html#cb21-104" tabindex="-1"></a>  boundary_centroid <span class="ot">&lt;-</span> <span class="fu">st_centroid</span>(boundary)</span>
-<span id="cb21-105"><a href="creating-study-area-map.html#cb21-105" tabindex="-1"></a>  coords <span class="ot">&lt;-</span> <span class="fu">st_coordinates</span>(boundary_centroid)</span>
-<span id="cb21-106"><a href="creating-study-area-map.html#cb21-106" tabindex="-1"></a>  </span>
-<span id="cb21-107"><a href="creating-study-area-map.html#cb21-107" tabindex="-1"></a>  inset <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb21-108"><a href="creating-study-area-map.html#cb21-108" tabindex="-1"></a>    <span class="fu">geom_sf</span>(<span class="at">data =</span> northeast, <span class="at">fill =</span> <span class="st">&quot;white&quot;</span>, <span class="at">color =</span> <span class="st">&quot;gray50&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
-<span id="cb21-109"><a href="creating-study-area-map.html#cb21-109" tabindex="-1"></a>    <span class="fu">geom_sf</span>(<span class="at">data =</span> northeast[northeast<span class="sc">$</span>name <span class="sc">==</span> highlight_state, ], </span>
-<span id="cb21-110"><a href="creating-study-area-map.html#cb21-110" tabindex="-1"></a>            <span class="at">fill =</span> <span class="st">&quot;lightblue&quot;</span>, <span class="at">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb21-111"><a href="creating-study-area-map.html#cb21-111" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> coords[<span class="dv">1</span>], <span class="at">y =</span> coords[<span class="dv">2</span>]), <span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">size =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb21-112"><a href="creating-study-area-map.html#cb21-112" tabindex="-1"></a>    <span class="fu">theme_void</span>() <span class="sc">+</span></span>
-<span id="cb21-113"><a href="creating-study-area-map.html#cb21-113" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
-<span id="cb21-114"><a href="creating-study-area-map.html#cb21-114" tabindex="-1"></a>      <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;white&quot;</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>),</span>
-<span id="cb21-115"><a href="creating-study-area-map.html#cb21-115" tabindex="-1"></a>      <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb21-116"><a href="creating-study-area-map.html#cb21-116" tabindex="-1"></a>    ) <span class="sc">+</span></span>
-<span id="cb21-117"><a href="creating-study-area-map.html#cb21-117" tabindex="-1"></a>    <span class="fu">coord_sf</span>(<span class="at">expand =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb21-118"><a href="creating-study-area-map.html#cb21-118" tabindex="-1"></a>  </span>
-<span id="cb21-119"><a href="creating-study-area-map.html#cb21-119" tabindex="-1"></a>  <span class="co"># Combine with inset</span></span>
-<span id="cb21-120"><a href="creating-study-area-map.html#cb21-120" tabindex="-1"></a>  final_plot <span class="ot">&lt;-</span> main_plot <span class="sc">+</span> </span>
-<span id="cb21-121"><a href="creating-study-area-map.html#cb21-121" tabindex="-1"></a>    <span class="fu">inset_element</span>(inset, <span class="at">left =</span> inset_left, <span class="at">bottom =</span> inset_bottom, </span>
-<span id="cb21-122"><a href="creating-study-area-map.html#cb21-122" tabindex="-1"></a>                  <span class="at">right =</span> inset_right, <span class="at">top =</span> inset_top)</span>
-<span id="cb21-123"><a href="creating-study-area-map.html#cb21-123" tabindex="-1"></a>  </span>
-<span id="cb21-124"><a href="creating-study-area-map.html#cb21-124" tabindex="-1"></a>  <span class="fu">return</span>(final_plot)</span>
-<span id="cb21-125"><a href="creating-study-area-map.html#cb21-125" tabindex="-1"></a>}</span>
-<span id="cb21-126"><a href="creating-study-area-map.html#cb21-126" tabindex="-1"></a></span>
-<span id="cb21-127"><a href="creating-study-area-map.html#cb21-127" tabindex="-1"></a><span class="co"># Create panels with specified inset positions</span></span>
-<span id="cb21-128"><a href="creating-study-area-map.html#cb21-128" tabindex="-1"></a>panel1 <span class="ot">&lt;-</span> <span class="fu">create_enhanced_panel</span>(acadia, points, <span class="st">&quot;Acadia National Park&quot;</span>, </span>
-<span id="cb21-129"><a href="creating-study-area-map.html#cb21-129" tabindex="-1"></a>                               <span class="st">&quot;Maine&quot;</span>, <span class="st">&quot;bottom_right&quot;</span>)</span>
-<span id="cb21-130"><a href="creating-study-area-map.html#cb21-130" tabindex="-1"></a>panel2 <span class="ot">&lt;-</span> <span class="fu">create_enhanced_panel</span>(hubbard_brook, points, <span class="st">&quot;Hubbard Brook Experimental Forest&quot;</span>, </span>
-<span id="cb21-131"><a href="creating-study-area-map.html#cb21-131" tabindex="-1"></a>                               <span class="st">&quot;New Hampshire&quot;</span>, <span class="st">&quot;bottom_right&quot;</span>)</span>
-<span id="cb21-132"><a href="creating-study-area-map.html#cb21-132" tabindex="-1"></a>panel3 <span class="ot">&lt;-</span> <span class="fu">create_enhanced_panel</span>(katahdin, points, <span class="st">&quot;Katahdin Woods and Waters&quot;</span>, </span>
-<span id="cb21-133"><a href="creating-study-area-map.html#cb21-133" tabindex="-1"></a>                               <span class="st">&quot;Maine&quot;</span>, <span class="st">&quot;bottom_right&quot;</span>)</span>
-<span id="cb21-134"><a href="creating-study-area-map.html#cb21-134" tabindex="-1"></a>panel4 <span class="ot">&lt;-</span> <span class="fu">create_enhanced_panel</span>(marsh_billings, points, <span class="st">&quot;Marsh-Billings-Rockefeller NHP&quot;</span>, </span>
-<span id="cb21-135"><a href="creating-study-area-map.html#cb21-135" tabindex="-1"></a>                               <span class="st">&quot;Vermont&quot;</span>, <span class="st">&quot;top_right&quot;</span>)</span>
-<span id="cb21-136"><a href="creating-study-area-map.html#cb21-136" tabindex="-1"></a></span>
-<span id="cb21-137"><a href="creating-study-area-map.html#cb21-137" tabindex="-1"></a><span class="co"># Create true facet-like layout with equal sizing</span></span>
-<span id="cb21-138"><a href="creating-study-area-map.html#cb21-138" tabindex="-1"></a>final_map <span class="ot">&lt;-</span> (panel1 <span class="sc">|</span> panel2) <span class="sc">/</span> (panel3 <span class="sc">|</span> panel4) <span class="sc">+</span></span>
-<span id="cb21-139"><a href="creating-study-area-map.html#cb21-139" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="at">widths =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">+</span>  <span class="co"># Force equal dimensions</span></span>
-<span id="cb21-140"><a href="creating-study-area-map.html#cb21-140" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(</span>
-<span id="cb21-141"><a href="creating-study-area-map.html#cb21-141" tabindex="-1"></a>    <span class="at">theme =</span> <span class="fu">theme</span>(</span>
-<span id="cb21-142"><a href="creating-study-area-map.html#cb21-142" tabindex="-1"></a>      <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;white&quot;</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">linewidth =</span> <span class="dv">1</span>),</span>
-<span id="cb21-143"><a href="creating-study-area-map.html#cb21-143" tabindex="-1"></a>      <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>)</span>
-<span id="cb21-144"><a href="creating-study-area-map.html#cb21-144" tabindex="-1"></a>    )</span>
-<span id="cb21-145"><a href="creating-study-area-map.html#cb21-145" tabindex="-1"></a>  ) <span class="sc">&amp;</span></span>
-<span id="cb21-146"><a href="creating-study-area-map.html#cb21-146" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">aspect.ratio =</span> <span class="dv">1</span>)  <span class="co"># Apply to all panels</span></span>
-<span id="cb21-147"><a href="creating-study-area-map.html#cb21-147" tabindex="-1"></a></span>
-<span id="cb21-148"><a href="creating-study-area-map.html#cb21-148" tabindex="-1"></a><span class="co"># Display</span></span>
-<span id="cb21-149"><a href="creating-study-area-map.html#cb21-149" tabindex="-1"></a>final_map</span>
-<span id="cb21-150"><a href="creating-study-area-map.html#cb21-150" tabindex="-1"></a></span>
-<span id="cb21-151"><a href="creating-study-area-map.html#cb21-151" tabindex="-1"></a><span class="co"># Save with high quality - using square dimensions</span></span>
-<span id="cb21-152"><a href="creating-study-area-map.html#cb21-152" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;four_panel_facet_map_equal.png&quot;</span>, final_map, </span>
-<span id="cb21-153"><a href="creating-study-area-map.html#cb21-153" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">12</span>, <span class="at">height =</span> <span class="dv">12</span>, <span class="at">dpi =</span> <span class="dv">300</span>, <span class="at">bg =</span> <span class="st">&quot;white&quot;</span>,  <span class="co"># Square output</span></span>
-<span id="cb21-154"><a href="creating-study-area-map.html#cb21-154" tabindex="-1"></a>       <span class="at">device =</span> <span class="st">&quot;png&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="creating-study-area-map.html#cb22-1" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb22-2"><a href="creating-study-area-map.html#cb22-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb22-3"><a href="creating-study-area-map.html#cb22-3" tabindex="-1"></a><span class="fu">library</span>(ggspatial)</span>
-<span id="cb22-4"><a href="creating-study-area-map.html#cb22-4" tabindex="-1"></a></span>
-<span id="cb22-5"><a href="creating-study-area-map.html#cb22-5" tabindex="-1"></a><span class="co"># Acadia Panel - Bottom right inset</span></span>
-<span id="cb22-6"><a href="creating-study-area-map.html#cb22-6" tabindex="-1"></a>acadia_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(boundary, points, <span class="at">title =</span> <span class="st">&quot;Acadia National Park&quot;</span>) {</span>
-<span id="cb22-7"><a href="creating-study-area-map.html#cb22-7" tabindex="-1"></a>  </span>
-<span id="cb22-8"><a href="creating-study-area-map.html#cb22-8" tabindex="-1"></a>  <span class="co"># Ensure same CRS</span></span>
-<span id="cb22-9"><a href="creating-study-area-map.html#cb22-9" tabindex="-1"></a>  boundary <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(boundary, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
-<span id="cb22-10"><a href="creating-study-area-map.html#cb22-10" tabindex="-1"></a>  points <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(points, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
-<span id="cb22-11"><a href="creating-study-area-map.html#cb22-11" tabindex="-1"></a>  </span>
-<span id="cb22-12"><a href="creating-study-area-map.html#cb22-12" tabindex="-1"></a>  <span class="co"># Filter points near boundary</span></span>
-<span id="cb22-13"><a href="creating-study-area-map.html#cb22-13" tabindex="-1"></a>  boundary_buffer <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(boundary, <span class="at">dist =</span> <span class="fl">0.01</span>)</span>
-<span id="cb22-14"><a href="creating-study-area-map.html#cb22-14" tabindex="-1"></a>  nearby_points <span class="ot">&lt;-</span> <span class="fu">st_filter</span>(points, boundary_buffer)</span>
-<span id="cb22-15"><a href="creating-study-area-map.html#cb22-15" tabindex="-1"></a>  </span>
-<span id="cb22-16"><a href="creating-study-area-map.html#cb22-16" tabindex="-1"></a>  <span class="co"># Get bounding box with adequate margin</span></span>
-<span id="cb22-17"><a href="creating-study-area-map.html#cb22-17" tabindex="-1"></a>  polygon_bbox <span class="ot">&lt;-</span> <span class="fu">st_bbox</span>(boundary)</span>
-<span id="cb22-18"><a href="creating-study-area-map.html#cb22-18" tabindex="-1"></a>  x_range <span class="ot">&lt;-</span> polygon_bbox[<span class="dv">3</span>] <span class="sc">-</span> polygon_bbox[<span class="dv">1</span>]</span>
-<span id="cb22-19"><a href="creating-study-area-map.html#cb22-19" tabindex="-1"></a>  y_range <span class="ot">&lt;-</span> polygon_bbox[<span class="dv">4</span>] <span class="sc">-</span> polygon_bbox[<span class="dv">2</span>]</span>
-<span id="cb22-20"><a href="creating-study-area-map.html#cb22-20" tabindex="-1"></a>  </span>
-<span id="cb22-21"><a href="creating-study-area-map.html#cb22-21" tabindex="-1"></a>  <span class="co"># Add 50% margin to ensure no overlap</span></span>
-<span id="cb22-22"><a href="creating-study-area-map.html#cb22-22" tabindex="-1"></a>  expanded_bbox <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb22-23"><a href="creating-study-area-map.html#cb22-23" tabindex="-1"></a>    <span class="at">xmin =</span> polygon_bbox[<span class="dv">1</span>] <span class="sc">-</span> (x_range <span class="sc">*</span> <span class="fl">0.3</span>),</span>
-<span id="cb22-24"><a href="creating-study-area-map.html#cb22-24" tabindex="-1"></a>    <span class="at">ymin =</span> polygon_bbox[<span class="dv">2</span>] <span class="sc">-</span> (y_range <span class="sc">*</span> <span class="fl">0.3</span>),</span>
-<span id="cb22-25"><a href="creating-study-area-map.html#cb22-25" tabindex="-1"></a>    <span class="at">xmax =</span> polygon_bbox[<span class="dv">3</span>] <span class="sc">+</span> (x_range <span class="sc">*</span> <span class="fl">0.3</span>),</span>
-<span id="cb22-26"><a href="creating-study-area-map.html#cb22-26" tabindex="-1"></a>    <span class="at">ymax =</span> polygon_bbox[<span class="dv">4</span>] <span class="sc">+</span> (y_range <span class="sc">*</span> <span class="fl">0.3</span>)</span>
-<span id="cb22-27"><a href="creating-study-area-map.html#cb22-27" tabindex="-1"></a>  )</span>
-<span id="cb22-28"><a href="creating-study-area-map.html#cb22-28" tabindex="-1"></a>  </span>
-<span id="cb22-29"><a href="creating-study-area-map.html#cb22-29" tabindex="-1"></a>  <span class="co"># Main plot</span></span>
-<span id="cb22-30"><a href="creating-study-area-map.html#cb22-30" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb22-31"><a href="creating-study-area-map.html#cb22-31" tabindex="-1"></a>    <span class="fu">geom_sf</span>(<span class="at">data =</span> boundary, <span class="at">fill =</span> <span class="st">&quot;lightblue&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>, </span>
-<span id="cb22-32"><a href="creating-study-area-map.html#cb22-32" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb22-33"><a href="creating-study-area-map.html#cb22-33" tabindex="-1"></a>    <span class="fu">geom_sf</span>(<span class="at">data =</span> nearby_points, <span class="at">color =</span> <span class="st">&quot;brown&quot;</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
-<span id="cb22-34"><a href="creating-study-area-map.html#cb22-34" tabindex="-1"></a>    <span class="fu">annotation_north_arrow</span>(<span class="at">location =</span> <span class="st">&quot;tl&quot;</span>, <span class="at">which_north =</span> <span class="st">&quot;true&quot;</span>, </span>
-<span id="cb22-35"><a href="creating-study-area-map.html#cb22-35" tabindex="-1"></a>                          <span class="at">pad_x =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;in&quot;</span>), <span class="at">pad_y =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;in&quot;</span>),</span>
-<span id="cb22-36"><a href="creating-study-area-map.html#cb22-36" tabindex="-1"></a>                          <span class="at">height =</span> <span class="fu">unit</span>(<span class="fl">0.8</span>, <span class="st">&quot;cm&quot;</span>), <span class="at">width =</span> <span class="fu">unit</span>(<span class="fl">0.8</span>, <span class="st">&quot;cm&quot;</span>),</span>
-<span id="cb22-37"><a href="creating-study-area-map.html#cb22-37" tabindex="-1"></a>                          <span class="at">style =</span> <span class="fu">north_arrow_fancy_orienteering</span>(</span>
-<span id="cb22-38"><a href="creating-study-area-map.html#cb22-38" tabindex="-1"></a>                            <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>, <span class="st">&quot;white&quot;</span>),</span>
-<span id="cb22-39"><a href="creating-study-area-map.html#cb22-39" tabindex="-1"></a>                            <span class="at">line_col =</span> <span class="st">&quot;black&quot;</span>,</span>
-<span id="cb22-40"><a href="creating-study-area-map.html#cb22-40" tabindex="-1"></a>                            <span class="at">text_family =</span> <span class="st">&quot;Century Gothic&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb22-41"><a href="creating-study-area-map.html#cb22-41" tabindex="-1"></a>    <span class="fu">annotation_scale</span>(<span class="at">location =</span> <span class="st">&quot;bl&quot;</span>, <span class="at">width_hint =</span> <span class="fl">0.25</span>,</span>
-<span id="cb22-42"><a href="creating-study-area-map.html#cb22-42" tabindex="-1"></a>                    <span class="at">pad_x =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;in&quot;</span>), <span class="at">pad_y =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;in&quot;</span>),</span>
-<span id="cb22-43"><a href="creating-study-area-map.html#cb22-43" tabindex="-1"></a>                    <span class="at">height =</span> <span class="fu">unit</span>(<span class="fl">0.15</span>, <span class="st">&quot;cm&quot;</span>),</span>
-<span id="cb22-44"><a href="creating-study-area-map.html#cb22-44" tabindex="-1"></a>                    <span class="at">text_family =</span> <span class="st">&quot;Century Gothic&quot;</span>, <span class="at">text_col =</span> <span class="st">&quot;black&quot;</span>) <span class="sc">+</span></span>
-<span id="cb22-45"><a href="creating-study-area-map.html#cb22-45" tabindex="-1"></a>    <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(expanded_bbox[<span class="dv">1</span>], expanded_bbox[<span class="dv">3</span>]), </span>
-<span id="cb22-46"><a href="creating-study-area-map.html#cb22-46" tabindex="-1"></a>             <span class="at">ylim =</span> <span class="fu">c</span>(expanded_bbox[<span class="dv">2</span>], expanded_bbox[<span class="dv">4</span>]), </span>
-<span id="cb22-47"><a href="creating-study-area-map.html#cb22-47" tabindex="-1"></a>             <span class="at">expand =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb22-48"><a href="creating-study-area-map.html#cb22-48" tabindex="-1"></a>    <span class="fu">theme_void</span>() <span class="sc">+</span></span>
-<span id="cb22-49"><a href="creating-study-area-map.html#cb22-49" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
-<span id="cb22-50"><a href="creating-study-area-map.html#cb22-50" tabindex="-1"></a>      <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">12</span>, <span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, </span>
-<span id="cb22-51"><a href="creating-study-area-map.html#cb22-51" tabindex="-1"></a>                               <span class="at">family =</span> <span class="st">&quot;Century Gothic&quot;</span>),</span>
-<span id="cb22-52"><a href="creating-study-area-map.html#cb22-52" tabindex="-1"></a>      <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">linewidth =</span> <span class="dv">1</span>),</span>
-<span id="cb22-53"><a href="creating-study-area-map.html#cb22-53" tabindex="-1"></a>      <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;white&quot;</span>),</span>
-<span id="cb22-54"><a href="creating-study-area-map.html#cb22-54" tabindex="-1"></a>      <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>)</span>
-<span id="cb22-55"><a href="creating-study-area-map.html#cb22-55" tabindex="-1"></a>    ) <span class="sc">+</span></span>
-<span id="cb22-56"><a href="creating-study-area-map.html#cb22-56" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> title)</span>
-<span id="cb22-57"><a href="creating-study-area-map.html#cb22-57" tabindex="-1"></a>}</span>
-<span id="cb22-58"><a href="creating-study-area-map.html#cb22-58" tabindex="-1"></a></span>
-<span id="cb22-59"><a href="creating-study-area-map.html#cb22-59" tabindex="-1"></a><span class="co"># Create and display Acadia plot</span></span>
-<span id="cb22-60"><a href="creating-study-area-map.html#cb22-60" tabindex="-1"></a>panel1 <span class="ot">&lt;-</span> <span class="fu">acadia_plot</span>(acadia, points)</span>
-<span id="cb22-61"><a href="creating-study-area-map.html#cb22-61" tabindex="-1"></a>panel1</span>
-<span id="cb22-62"><a href="creating-study-area-map.html#cb22-62" tabindex="-1"></a></span>
-<span id="cb22-63"><a href="creating-study-area-map.html#cb22-63" tabindex="-1"></a><span class="co"># Save individual plot</span></span>
-<span id="cb22-64"><a href="creating-study-area-map.html#cb22-64" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;acadia_panel.png&quot;</span>, panel1, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="dv">6</span>, <span class="at">dpi =</span> <span class="dv">300</span>, <span class="at">bg =</span> <span class="st">&quot;white&quot;</span>)</span></code></pre></div>
 
 </div>
 </div>
