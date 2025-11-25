@@ -1,9 +1,11 @@
 --- 
 knit: "bookdown::render_book"
-title: "Source code and supporting information for _Predicting abundances from acoustic data: New Hampshire Birds_"
+title: "Source code and supporting information for _Predicting abundances from acoustic data: North Eastern Bird Communities"
 author:
     - Vijay Ramesh
     - Pooja Panwar
+    - Orlando Acevedo-Charry
+    - Sharon Martinson
     - Laurel Symes
 date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
 site: bookdown::bookdown_site
