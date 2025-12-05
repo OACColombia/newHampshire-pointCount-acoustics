@@ -12,7 +12,7 @@ library(tidyverse)
 
 ## Simulated data
 
-Let's assume that we have sites (point counts of 50m fixed radius) $m = 1,2,~...~,~M=25$ and species $s = 1,2,~...~,S = 20$ in the same area of 100 ha (following the approach in \href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856}{Lopez et al. 2017}). Our latent state $X_{m,s}$ is the site-level log-abundance state for species $s$ at site $m$, which follows a stationary Ornstein-Uhlenbeck, OU, diffusion for Gompertz on log-scale:
+Let's assume that we have sites (point counts of 50m fixed radius) $m = 1,2,~...~,~M=25$ and species $s = 1,2,~...~,S = 20$ in the same area of 100 ha (following the approach in [Lopez et al. 2017](https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856)). Our latent state $X_{m,s}$ is the site-level log-abundance state for species $s$ at site $m$, which follows a stationary Ornstein-Uhlenbeck, OU, diffusion for Gompertz on log-scale:
 
 $$
 X_{t+1, s} = a_s + c_s * X_{t, s} + \epsilon_{t}; ~ \epsilon \sim \text{Normal}(0,\sigma_s^2)
@@ -54,7 +54,7 @@ then, $\alpha_s = \log(\zeta_s) + \mu_s (1-\gamma_s) + 0.5\sigma_{X,s}^2(1-\gamm
 
 The acoustic detection data are $Y_{m,s}^{Acous} \sim \text{Negative~Binomial}(r_s, p_{m,s})$, where $p_{m,s} = \frac{r_s}{r_s+\lambda_{m,s}^{(0.78)}}$ represents the success parameter, being a ratio of the overdispersion parameter $r_s$ and the sum of the overdispersion parameter and the mean expected counts $C_{m,s}^{Acoustic~Detections} = \lambda_{m,s}^{(0.78)} = e^{X_{m,s}}$.
 
-These expected counts at the point (site) level (0.78 ha, 50m radius) then are extrapolated to the entire area of 100 ha as: $\Lambda_s^{(100)} = \frac{100 \times \lambda_{m,s}^{(0.78)}}{0.78}$  (again, following the approach in \href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856}{Lopez et al. 2017}). 
+These expected counts at the point (site) level (0.78 ha, 50m radius) then are extrapolated to the entire area of 100 ha as: $\Lambda_s^{(100)} = \frac{100 \times \lambda_{m,s}^{(0.78)}}{0.78}$  (again, following the approach in [Lopez et al. 2017](https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856)). 
 
 Define the dimensions and indexing
 ```{r}

@@ -249,7 +249,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="simulated-data" class="section level2 hasAnchor" number="9.2">
 <h2><span class="header-section-number">9.2</span> Simulated data<a href="multi-species-and-site-location-level-effect.html#simulated-data" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Let’s assume that we have sites (point counts of 50m fixed radius) <span class="math inline">\(m = 1,2,~...~,~M=25\)</span> and species <span class="math inline">\(s = 1,2,~...~,S = 20\)</span> in the same area of 100 ha (following the approach in ). Our latent state <span class="math inline">\(X_{m,s}\)</span> is the site-level log-abundance state for species <span class="math inline">\(s\)</span> at site <span class="math inline">\(m\)</span>, which follows a stationary Ornstein-Uhlenbeck, OU, diffusion for Gompertz on log-scale:</p>
+<p>Let’s assume that we have sites (point counts of 50m fixed radius) <span class="math inline">\(m = 1,2,~...~,~M=25\)</span> and species <span class="math inline">\(s = 1,2,~...~,S = 20\)</span> in the same area of 100 ha (following the approach in <a href="https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856">Lopez et al. 2017</a>). Our latent state <span class="math inline">\(X_{m,s}\)</span> is the site-level log-abundance state for species <span class="math inline">\(s\)</span> at site <span class="math inline">\(m\)</span>, which follows a stationary Ornstein-Uhlenbeck, OU, diffusion for Gompertz on log-scale:</p>
 <p><span class="math display">\[
 X_{t+1, s} = a_s + c_s * X_{t, s} + \epsilon_{t}; ~ \epsilon \sim \text{Normal}(0,\sigma_s^2)
 \]</span></p>
@@ -277,7 +277,7 @@ and variance:</p>
 \]</span>
 then, <span class="math inline">\(\alpha_s = \log(\zeta_s) + \mu_s (1-\gamma_s) + 0.5\sigma_{X,s}^2(1-\gamma_s^2)\)</span>.</p>
 <p>The acoustic detection data are <span class="math inline">\(Y_{m,s}^{Acous} \sim \text{Negative~Binomial}(r_s, p_{m,s})\)</span>, where <span class="math inline">\(p_{m,s} = \frac{r_s}{r_s+\lambda_{m,s}^{(0.78)}}\)</span> represents the success parameter, being a ratio of the overdispersion parameter <span class="math inline">\(r_s\)</span> and the sum of the overdispersion parameter and the mean expected counts <span class="math inline">\(C_{m,s}^{Acoustic~Detections} = \lambda_{m,s}^{(0.78)} = e^{X_{m,s}}\)</span>.</p>
-<p>These expected counts at the point (site) level (0.78 ha, 50m radius) then are extrapolated to the entire area of 100 ha as: <span class="math inline">\(\Lambda_s^{(100)} = \frac{100 \times \lambda_{m,s}^{(0.78)}}{0.78}\)</span> (again, following the approach in ).</p>
+<p>These expected counts at the point (site) level (0.78 ha, 50m radius) then are extrapolated to the entire area of 100 ha as: <span class="math inline">\(\Lambda_s^{(100)} = \frac{100 \times \lambda_{m,s}^{(0.78)}}{0.78}\)</span> (again, following the approach in <a href="https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856">Lopez et al. 2017</a>).</p>
 <p>Define the dimensions and indexing</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="multi-species-and-site-location-level-effect.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
 <span id="cb2-2"><a href="multi-species-and-site-location-level-effect.html#cb2-2" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="dv">25</span></span>
