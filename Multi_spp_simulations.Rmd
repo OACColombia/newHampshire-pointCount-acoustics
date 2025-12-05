@@ -150,10 +150,10 @@ obs_df %>%
   group_by(species) %>%
   summarise(meanCounts = mean(Y_counts),
             varCounts = var(Y_counts), 
-            VMR_counts = varCounts/meanCounts, #most are between 0 and 1, but some >1!
+            VMR_counts = varCounts/meanCounts, # between 0 and 1, correctly underdispersed!
             meanAcouDet = mean(Y_acoust),
             varAcouDet = var(Y_acoust), 
-            VMR_AcouDet = varAcouDet/meanAcouDet)  # correctly overdispersed!
+            VMR_AcouDet = varAcouDet/meanAcouDet)  # >1, correctly overdispersed!
 ```
 
 Spatial grid of this point counts
