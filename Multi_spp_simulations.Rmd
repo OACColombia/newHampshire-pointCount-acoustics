@@ -120,11 +120,20 @@ lambda_df <- X_df |>
     lambda_acoust_078 = pmax(exp(log_lambda_acoust_078), 1e-6)
   )
 
-plot(lambda_df$lambda_counts_078, lambda_df$lambda_acoust_078)
-abline(a = 0, b = 1, col = "blue")
+ggplot(lambda_df, aes(x = lambda_counts_078, y = lambda_acoust_078))+
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", linetype = "solid")+
+  geom_abline(slope = 1, linetype = "dashed")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  labs(x = "Expected mean counts per site\n(point counts)",
+       y = "Expected mean counts per site\n(acoustic detections)")+
+  coord_fixed()
+ggsave(filename = "figs/sim_lambdas.jpg", width = 5, height = 5, units = "in", dpi = 300)
 ```
+![Expected counts from simulated data - from acoustic detections and point counts](figs/sim_lambdas.jpg)
 
-Calibrate $r_s$
+Calibrate $r_s$ (for the overdispersion)
 ```{r}
 lambda_mean_s <- exp(E_X + 0.5 * VarX)
 vmr_target_s <- runif(S, min = 5, max = 50)
@@ -154,7 +163,24 @@ obs_df %>%
             meanAcouDet = mean(Y_acoust),
             varAcouDet = var(Y_acoust), 
             VMR_AcouDet = varAcouDet/meanAcouDet)  # >1, correctly overdispersed!
+
+ggplot(obs_df, aes(x = lambda_counts_078,
+                 y = lambda_acoust_078))+
+  geom_point(alpha = 0.25) +
+  geom_point(aes(x = Y_counts,
+                 y = Y_acoust), shape = "X", 
+             alpha = 0.25) +
+  geom_smooth(method = "lm", linetype = "solid")+
+  geom_abline(slope = 1, linetype = "dashed")+
+  scale_x_continuous(limits = c(0,100))+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  labs(x = "Expected (o) and observed (x) counts per site\n(point counts)",
+       y = "Expected counts (o) and\nobserved acoustic detections (x) per site")+
+  coord_fixed()
+ggsave(filename = "figs/sim_lambdas_obs.jpg", width = 5, height = 5, units = "in", dpi = 300)
 ```
+![Expected counts (o) from simulated data of observations (x) - from acoustic detections (Y-axis) and point counts (X-axis)](figs/sim_lambdas_obs.jpg)
 
 Spatial grid of this point counts
 ```{r}

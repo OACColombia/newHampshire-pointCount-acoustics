@@ -55,3 +55,6 @@ loading-and-exploring-data-1
 hierarchical-model-for-counts-with-two-observation-processes-1
 coding-observation-point-counts-1
 coding-acoustic-detections-counts-1
+multi-species-and-site-location-level-effect
+packages-2
+simulated-data
