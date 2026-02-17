@@ -14,208 +14,243 @@ library(rjags)
 
 ## Framework
 
-Imagine we will sample birds during the morning (05:00-10:00) of every possible day at their breeding territory, and the birds defend that territory across the breeding season of that year. We can use point-counts and Passive Acoustic Monitoring in the same sites $m$. These two observation process should link with the ecological process (latent) of the density of individuals available to be detected, which will be stationary during the sampling period (every morning during the breeding season). Traditionally, we have seeing that point counts are underdispersed (0 < Variance-to-Mean Ratio < 1), while acoustic detections are overdispersed (Variance-to-Mean Ration > 1).
+Imagine we will sample birds during the morning (05:30-8:00) of every possible day at their breeding territory, and the birds defend that territory across the breeding season of that year. We can use point-counts and Passive Acoustic Monitoring in the same sites $m$. These two observation process should link with the ecological process (latent) of the abundance of individuals available to be detected and providing cues of their presence, which will be stationary during the sampling period (every morning during the breeding season). Evidently, some mornings and sampling events will have stochastic variation, reflecting a noise in the process that could be also accounted for. From empirical data, we have seeing that point counts are underdispersed (0 < Variance-to-Mean Ratio < 1), while acoustic detections are overdispersed (Variance-to-Mean Ration > 1).
 
-```{r, echo=FALSE}
-# Fake data to generate figure
-# Gompertz function and decay function
+```{r}
+# Gompertz functions
 gompertz <- function(t, K = 1, a = 5, b = 0.5) {
   K * exp(-a * exp(-b * t))
 }
 
 gompertz_decay <- function(t, K = 1, a = 5, b = 0.5) {
-  K - gompertz(t, K, a, b)   # mirrored decay
+  K - gompertz(t, K, a, b)
 }
 
-# Fake time series
-t1 <- seq(0, 20, length.out = 200)   # growth
-t2 <- seq(20, 40, length.out = 200)  # decay
+# Time
+t1 <- seq(0, 20, length.out = 200)
+t2 <- seq(20, 40, length.out = 200)
 
-# 40 samples inside the sampling window
-sample_idx <- sample(102:220, size = 40) 
-
-acoustic_vec <- rep(NA, length(c(t1, t2))) 
-counts_vec <- rep(NA, length(c(t1, t2))) 
-
-acoustic_vec[sample_idx] <- rnorm(40, mean = 0.65, sd = 0.5) 
-counts_vec[sample_idx] <- rnorm(40, mean = 0.25, sd = 0.1)
-
-df <- tibble(
-  time  = c(t1, t2),
-  value = c(gompertz(t1, K = 0.5, a = 5, b = 0.4),
-            gompertz_decay(t2 - 20, K = 0.5, a = 5, b = 0.4)),
-  acoustic = acoustic_vec,
-  counts = counts_vec
+# Deterministic mean curve
+mu_vec <- c(
+  gompertz(t1, K = 0.5, a = 5, b = 0.4),
+  gompertz_decay(t2 - 20, K = 0.5, a = 5, b = 0.4)
 )
 
-# stationary window (plateau)
+# Add stochasticity (process noise)
+set.seed(123)
+sigma_proc <- 0.03
+latent_stochastic <- mu_vec + rnorm(length(mu_vec), 0, sigma_proc)
+
+# Sampling window
 stationary_start <- 10
 stationary_end   <- 22
 
+# Sampling indices
+sample_idx <- sample(120:150, size = 15)
+
+acoustic_vec <- rep(NA, length(mu_vec))
+counts_vec   <- rep(NA, length(mu_vec))
+
+acoustic_vec[sample_idx] <- rnorm(15, mean = 0.65, sd = 0.5)
+counts_vec[sample_idx]   <- rnorm(15, mean = 0.25, sd = 0.1)
+
+df <- tibble(
+  time     = c(t1, t2),
+  mu       = mu_vec,
+  latent   = latent_stochastic,
+  acoustic = acoustic_vec,
+  counts   = counts_vec
+)
+
 # Plot
 ggplot(df, aes(time)) +
-  geom_line(aes(y = value,
+  geom_line(aes(y = latent, 
                 color = "Latent",
                 fill = "Latent",
-                shape = "Latent"), size = 1.2) +
+                shape = "Latent"), 
+            size = 1) +
+  geom_line(aes(y = mu, 
+                color = "Mean",
+                fill = "Mean",
+                shape = "Mean"), 
+            linetype = "dashed", alpha = 0.6) +
   geom_point(aes(y = acoustic, 
                  color = "Acoustic", 
                  fill = "Acoustic", 
-                 shape = "Acoustic"), size = 2)+
+                 shape = "Acoustic"), 
+             size = 2) +
   geom_point(aes(y = counts, 
                  color = "Counts", 
                  fill = "Counts", 
-                 shape = "Counts"), size = 2)+
-  scale_color_manual(name = "", 
-                     values = c("Sampling" = "#ADD8E690",
-                                "Latent" = "#000000", 
-                                "Acoustic" = "#FFA500", 
-                                "Counts" = "#A020F0"), 
-                     breaks = c("Sampling", "Latent", "Acoustic", "Counts"))+
-  scale_fill_manual(name = "", 
-                     values = c("Sampling" = "#ADD8E690",
-                                "Latent" = "#00000010", 
-                                "Acoustic" = "#FFA50010", 
-                                "Counts" = "#A020F010"), 
-                     breaks = c("Sampling", "Latent", "Acoustic", "Counts"))+
-  scale_shape_manual(name = "", 
-                     values = c("Sampling" = NA,
+                 shape = "Counts"), 
+             size = 2) +
+  annotate("rect",
+           xmin = stationary_start, xmax = stationary_end,
+           ymin = -Inf, ymax = Inf,
+           fill = "#00000010", 
+           color = "#00000020") +
+  annotate("rect",
+           xmin = 11, xmax = 16,
+           ymin = -Inf, ymax = Inf,
+           fill = "#ADD8E640", 
+           color = "#ADD8E690") +
+  annotate("text", x = 18, y = 0.71, label = "Breeding", color = "#00000040") +
+  annotate("text", x = 14, y = 0.01, label = "Sampling", color = "#72bcd4") +
+  annotate("text", x = c(4,28), y = 0.41, label = "Non-breeding", color = "#00000040") +
+  scale_color_manual(name = "",
+                     values = c("Mean" = "gray50",
+                                "Latent" = "black",
+                                "Acoustic" = "#FFA500",
+                                "Counts" = "#A020F0")) +
+  scale_fill_manual(name = "",
+                     values = c("Mean" = "gray50",
+                                "Latent" = "black",
+                                "Acoustic" = "#FFA50060",
+                                "Counts" = "#A020F060")) +
+  scale_shape_manual(name = "",
+                     values = c("Mean" = NA,
                                 "Latent" = NA,
                                 "Acoustic" = 24,
-                                "Counts" = 25), 
-                     breaks = c("Sampling", "Latent", "Acoustic", "Counts"))+
-  scale_alpha_manual(values = c("Sampling" = 0.1, 
-                                "Latent" = 1, 
-                                "Acoustic" = 1, 
-                                "Counts" = 1), 
-                     guide = "none")+
-  scale_y_continuous(limits = c(0,1))+
-  scale_x_continuous(limits = c(0,30))+
-  labs(
-    x = "Time",
-    y = "Density"
-  ) +
+                                "Counts" = 25)) +
+  scale_y_continuous(limits = c(0,1)) +
+  scale_x_continuous(limits = c(0,30)) +
+  labs(x = "Time", y = "Abundance") +
   theme_classic() +
   theme(legend.position = "inside",
         legend.position.inside = c(0.85,0.8),
         axis.text = element_blank(),
-        axis.ticks = element_blank())+
-  annotate("rect", 
-           xmin = stationary_start, 
-           xmax = stationary_end, 
-           ymin = -Inf, ymax = Inf, 
-           fill = "#ADD8E640", color = "#ADD8E690")+
-  annotate("text",
-           x = 16, y = 0.01, label = "Sampling", color = "#72bcd4")
-
+        axis.ticks = element_blank())
 ggsave(filename = "figs/Framework.jpg")
 ```
 
 ![Framework for estimating latent density from two observation process using stochastic GSS](figs/Framework.jpg)
 
-Here we want to estimate the latent density (black line of the figure) from two observation process: counts from point counts (orange triangles) and acoustic detections from passive acoustic monitoring (purple triangles). The figure is fake data, with the unique purpose of present our framework and biological rationale.
+Here we want to estimate the latent abundance (black line of the figure) from two observation process: counts from point counts (purple downward triangles) and acoustic detections from passive acoustic monitoring (orange upward triangles). The figure is fake data, with the unique purpose of present our framework and ecological rationale.
 
 ## Ecological process
 
-Let's assume that we have sites of sampling $m = 1,2,~...~,~M=25$ and species $s = 1,2,~...~,S = 22$ in an area. Our latent state $X_{m,s} = \log{(D_{m,s})}$ is the site-level log-density state for species $s$ at the site $m$, which follows a stationary Ornstein-Uhlenbeck, OU, diffusion for Gompertz function dynamic on the log-scale:
+Let's assume that we have sites of sampling $m = 1,2,~...~,~M=10$ and species $s = 1,2,~...~,S = 4$ in an area. Our latent state $X_{t,m,s} = \log{(N_{m,s})}$ is the site-level log-abundance state for species $s$ at the site $m$, which follows a stationary Ornstein-Uhlenbeck, OU, diffusion for Gompertz function dynamic on the log-scale across time $t$, which could be discrete units of 10-min duration:
 
 $$
-X_{t+1, s} = a_s + c_s * X_{t, s} + \epsilon_{t};\\ ~ \epsilon_t \sim \text{Normal}(0,\sigma_s^2)
+X_{t+1, m, s} = a_s + c_s * X_{t, m, s} + \epsilon_{t};\\ ~ \epsilon_t \sim \text{Normal}(0,\sigma_s^2)
 $$
 
-where $a_s$ control the drift (the initial condition at $t=1$, and then equivalent to the maximum growth rate in a population model), $c_s$ controls the mean-reverting dynamic (such as the strength of density dependence, $c = 1 + b$ in a population model), and $\epsilon_{t}$ captures stochasticity in the process, distributed as a normal random variable with some noise of the process $\sigma_s^2$. Under stationarity and independence across sites, we can estimate the mean of the log-density counts as a function of the control drift and mean-reverting dynamic:
+where $a_s$ control the drift (the initial condition at $t=1$, and then equivalent to the maximum growth rate in a population model), $c_s$ controls the mean-reverting dynamic (such as the strength of density dependence, $c_s = 1 + b_s$ in a population model), and $\epsilon_{t}$ captures stochasticity in the process, distributed as a normal random variable with some noise of the process as variance $\sigma_s^2$. Under stationarity and independence across sites, we can estimate the mean of the log-abundance as a function of the control drift and mean-reverting dynamic:
 
 $$
-\text{E}[X_{\infty, s}] = \mu_s= \frac{a_s}{1-c_s}
+\text{E}[X_{\infty, m, s}] = \mu_s= \frac{a_s}{1-c_s}
 $$
-This stationary value is represented as the black line in the framework figure during the sampling period.
+This stationary value is represented as the dashed gray line tracking the latent dynamic (black line) in the framework figure during the sampling period.
 
 We can also estimate the variance of this value:
 
 $$
-\text{Var}[X_{\infty, s}] = \frac{\sigma_s^2}{1-c_s^2}
+\text{Var}[X_{\infty, m, s}] = \frac{\sigma_s^2}{1-c_s^2}
 $$
 
-We can simulate a community by sampling $X_{m,s}$ i.i.d. (independent and identical distributed) across $m$ from this stationary distribution. Dealing with the Janzen's inequality, we can add half of the variance to the $\hat{\mu_s}$. The expected density per site $m$ of each species $s$ becomes:
+We can simulate a community by sampling $X_{t,m,s}$ i.i.d. (independent and identical distributed) across $m$ from this stationary distribution. Dealing with the Janzen's inequality, we can add half of the variance to the $\hat{\mu_s}$. The expected abundance per site $m$ of each species $s$ becomes:
 
 $$
 \text{E}[\lambda_{m,s}] = \exp \left( \mu_s + 0.5 \times \frac{\sigma_s^2}{1-c_s^2} \right)
 $$
 
-But to simulate of observed data, we can use the realized latent state varying with time:
+But to simulate observed data, we can initiate the time-series with the realized latent state at $t = 1$:
 $$
-X_{t=1,m,s} \sim \text{Normal} \left(\mu_s, \frac{\sigma_s^2}{1-c_s^2} \right) \\
+X_{1,m,s} \sim \text{Normal} \left(\mu_s, \frac{\sigma_s^2}{1-c_s^2} \right) \\
 
 \lambda_{1,m,s} = \exp(X_{1,m,s})
 $$
 
-and the temporal trajectory within a site across the sampling period looks like $t = 1, ..., T_m$
+and the temporal trajectory within a site across the sampling period (15 blocks of 10-minutes each morning, 05:30 to 07:50, for ten days,  $t = 1, ..., T_m = 150$) looks like: 
 
 $$
-X_{t+1, m, s} = a_s + c_sX_{t,m,s} + \epsilon_{t,m,s}, \\
-\epsilon \sim \text{Normal}(0,\sigma^2_s)
+X_{t+1, m, s} = a_s + c_sX_{t,m,s} + \epsilon_{s}, \\
+\epsilon_{s} \sim \text{Normal}(0,\sigma^2_s)
 $$
-and each time (visit for sampling) has its own realized latent state:
+and each time has its own realized latent state:
 $$
 \lambda_{t,m,s} = \exp(X_{t,m,s})
 $$
 
+This latent state should be similar between the two observation processes $\lambda_{t,m,s}^{Counts} \approx \lambda_{t,m,s}^{Acoust}$. 
+
 ## Observation processes
 
-In our thought experiment, we can conduct point counts in an approximated area of 0.78 ha, equivalent from a 50m fixed radius (see [Lopez et al. 2017](https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856)). The observed point-count counts are 
+In our thought experiment, we can conduct point counts in an approximated area of 0.78 ha, equivalent from a 50m fixed radius (see [Lopez et al. 2017](https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12856)). The point-count observed counts are 
 $$
-Y_{t,m,s}^{Counts} \sim \text{Binomial}(\text{size} = \lambda_{t,m,s}, \text{ p} = \tau_{s})
+Y_{t,m,s}^{Counts} \sim \text{Poisson}(\lambda_{t,m,s}^{Counts} \times \tau_{s})
 $$ 
-\noindent where $\tau_{m}$ ranges between 0 and 1, and is a species-specific detection probability. It could be reasonable to assume aditional differences across site ($\tau_{m,s}$), but that is overcomplicating the model. We should `round(lambda)` in the code to ensure an integer for the size parameter (using a mixture to Poisson adds additional variance and overcomplicate the modeling).
+\noindent where $\tau_{s}$ ranges between 0 and 1, and is a species-specific detection probability. It could be reasonable to assume additional differences across site ($\tau_{m,s}$), but that would over complicates the model for now. Other models (Royle-Nichols, TTD, N-mixture, hierarchical distance, see [Fiss et al. 2017](https://esajournals.onlinelibrary.wiley.com/doi/epdf/10.1002/ecs2.4954)) also assume equal detection probability across individuals and visits.
 
 On the other hand, the acoustic detection data are 
 $$
-Y_{m,s}^{Acoust} \sim \text{Negative Binomial}(r_s,~p_{m,s})
+Y_{m,s}^{Acoust} \sim \text{Negative Binomial}(r_s,~\pi_{m,s}) \\
+\pi_{m,s} = \frac{r_s}{r_s+\lambda_{m,s}^{Acoust}}
 $$
-\noindent where $r_s$ is the overdispersion parameter and $p_{m,s}$ represents the success parameter, being a ratio of the overdispersion parameter $r_s$ and the sum of the overdispersion parameter and the mean expected counts $\lambda_{m,s}$: $p_{m,s} = \frac{r_s}{r_s+\lambda_{m,s}}$.
+\noindent where $r_s$ is the overdispersion parameter and $\pi_{m,s}$ represents the success parameter.
 
-Thus, during the breeding season we visit each site a number of times (such as 1 to 8), each visit happens between 05:00 and 10:00, of a 10-min duration for point counts (Binomial) and acoustic detection count (Negative Binomial).
+Thus, during the breeding season (May-June) we have the possibility to sample each site 30 times between 05:00 and 09:50 for several mornings, including various visits per site (such as 1 to 10). These 10-min duration sampling events generate the point counts (Binomial) and acoustic detection count (Negative Binomial) data in a simultaneous design. To accelerate the simulation, let's use two days ($T_m = 30 \times 2 = 60$)
 
 ## Simulating some data
 
 Define sites $M$ and species $S$
 ```{r}
-M <- 25
-S <- 22
-T_m <- sample(1:8, M, replace = TRUE)
+M <- 30
+S <- 4
+T_max <- 60
+
+visits <- sample(10:20, M, replace = TRUE) # visiting 2:10 was too few info
+T_m <- array(NA, dim = c(T_max, M, S))
+  
+for(s in 1:S){
+  for(m in 1:M){
+    sample_idx <- sort(sample(1:T_max, size = visits[m], replace = FALSE))
+    sample_vec <- rep(NA, T_max)
+    sample_vec[sample_idx] <- 1
+    T_m[,m,s] <- sample_vec
+  }
+}
+
 ```
 
 ### Species-level parameters
 
-To get stable equilibrium density dynamics, $|c_s|<1$, specifically with two cases: 1) $0<c<1$ and 2) $-1<c<0$; although in both cases as $t \rightarrow \infty$, the log density $x_t \rightarrow \mu$, the first case ($0<c<1$) approaches to equilibrium directly, while in the second case the dynamic follow damped oscillatory behavior (see [Ponciano et al. 2018](https://doi.org/10.1016/j.tpb.2018.04.002)). A good set of potential species-level parameters could be avoiding the extremes (exponential dynamic ($c = 1$))
+To get stable equilibrium density dynamics (when $t \rightarrow \infty$, the log abundance $x_t \rightarrow \mu$), the mean-reversing parameter should be $|c_s|<1$. When $0<c<1$, the log-abundance approaches to equilibrium directly. In contrast, when $-1<c<0$ the dynamic follows a damped oscillatory behavior (see [Ponciano et al. 2018](https://doi.org/10.1016/j.tpb.2018.04.002)). A mean-reversing parameter $c = 1$ identify exponential dynamics. Based on our assumption that individuals already arrived to their territories, we could also assume that the mean-reversing is not leading to damped oscillatory behavior nor exponential dynamics, so ranging $0.1 < c < 0.9$. We can rely on the infinitesimal relationship $\theta = -\log(c)$.   
 
-The stationary mean log-abundance $\mu_s$ could be draw from a normal distribution centered in ~1.8 (log(6), to avoid `exp(mu_s)<1`) and with sd = 1. With these two parameters, we can estimate the drift parameter $a_s = \mu_s * (1-c_s)$. For the environmental stochasticity noise we can use a lognormal as an intuitive right-skewed noise, centered in the meanlog -2.5 and sdlog 0.3 to produce overall values between 0.05 and 0.2 (higher variation can increase too much the cross-site heterogeneity).
+We know that the stationary mean log-abundance $\mu_s = \frac{a_s}{1-c_s}$. Thus, if we can "force" a mean log-abundance reasonable (such as between $\log(0.5)$ and $\log(10)$; see Fig 3 in [Fiss et al. 2017](https://esajournals.onlinelibrary.wiley.com/doi/epdf/10.1002/ecs2.4954)). Or also, use a $\log(\mu) \sim \text{Normal}(2,1)$.
 
-Detection probabilities for North-American birds distributes with right-skew shape, so we can use a beta distribution with shape1 = 1.5 and shape2 = 4.5 across species.
+With these two parameters, we can compute $a_s = \mu \times c_s$.
+
+For the environmental stochasticity noise we can use the ranges reported in [Dennis et al. (2006)](https://esajournals.onlinelibrary.wiley.com/doi/10.1890/0012-9615%282006%2976%5B323%3AEDDPNA%5D2.0.CO%3B2) and/or [Dennis et al. (2017)](http://www.math.ualberta.ca/~slele/publications/Lele%20Dennis%20Lutscher%20data%20cloning%20Ecology%20Letters%2020071.pdf), $\sigma_s^2$ between $0.001$ and $0.3$. We can use $\log(\sigma^2) \sim \text{Normal}(0,1)$.
+
+With these parameters, we can draw process $X_{t,m,s}$
 
 ```{r}
-# for the OU latent variable
-c_s     <- runif(S, -0.8, 0.9) # mean-reversion parameter
-mu_s    <- rnorm(S, mean = log(6), sd = 0.5) # mean log-abundance
-a_s     <- mu_s * (1 - c_s) # control the drift 
-sigma_s <- rlnorm(S, meanlog = -3, sdlog = 0.25) # noise of environmental stochasticity
-```
+# for the OU latent variable, we can rely on 
+lmu <- rnorm(S, log(3), 0.3)
+ltheta <- rnorm(S, log(0.3), 0.2)
+lsigsq <- rnorm(S, log(0.05), 0.3)
 
-Draw latent process $X_{t,m,s}$
-```{r}
-X <- array(NA, dim = c(max(T_m), M, S)) 
+mu_s <- lmu             # mean stationary log-abundance
+theta_s <- exp(ltheta)  # spead of equilibrium
+sigsq_s <- exp(lsigsq)  # noise of environmental stochasticity
+
+K_s <- exp(mu_s)        # mean stationary abundance
+c_s <- exp(-theta_s)    # mean-reversion parameter
+a_s <- mu_s * (1 - c_s) # control the drift 
+
+var_statio_s <- sigsq_s / (1 - exp(-2 * theta_s))
+
+X <- array(NA, dim = c(T_max, M, S)) 
 
 for(s in 1:S){ 
   for(m in 1:M){
     # first visit, drawn from the stationary distribution
-    var_stationary <- sigma_s[s] / (1 - c_s[s]^2) 
-    X[1,m,s] <- rnorm(1, mean = mu_s[s], sd = sqrt(var_stationary))
+    X[1,m,s] <- rnorm(1, mean = mu_s[s], sd = sqrt(var_statio_s[s]))
     
-    # OU process moving throughout time if there is more than one visit to the site
-    if(T_m[m] > 1){
-      for(t in 2:T_m[m]){
-        X[t,m,s] <- a_s[s] + c_s[s] * X[t-1,m,s] + rnorm(1,0,sqrt(sigma_s[s]))
-      }
+    # OU recursion process moving throughout time
+    for(t in 2:T_max){
+      X[t,m,s] <- rnorm(1, mean = (a_s[s] + c_s[s]*X[t-1,m,s]), sd = sqrt(sigsq_s))
     }
   }
 }
@@ -225,31 +260,57 @@ for(s in 1:S){
 Expected density per species per site at each time of visit.
 ```{r}
 lambda <- exp(X)
+cool.palette <- as.vector(MetBrewer::met.brewer("Homer2",10))
+
+jpeg("figs/Simulate_4s_10m_30t.jpeg", 
+    width = 800, height = 900, units = "px", res = 150)
+par(mfrow = c(2,2),oma=c(5,5,4,1), mar=c(2,2,2,1))
+
+for(s in 1:S){
+  plot(1:T_max, lambda[,1,s], 
+     pch=16, type="b",  bty="l",
+     xlab="", ylab="", main = paste0("Species ", s),
+     ylim=c(0,15), col=alpha(cool.palette[1], 0.5), cex.lab=1.15)
+  for(m in 2:M){
+    points(1:T_max, lambda[,m,s],
+           pch = 16, type = "b", col = alpha(cool.palette[m], 0.5))
+  }
+}
+mtext(text = "Latent expected abundance (10 sites)", side=2, outer=TRUE, cex=1.25,line=1)
+mtext(text = "Time (30 10-min sampling in 2 days)", side=1, outer=TRUE, cex=1.25,line=1)
+dev.off() 
 ```
+![Simulated expected latent abundance of four species in 30 sites](figs/Simulate_4s_10m_30t.jpeg)
 
 ### Observation process by point counts
 
 Recall:
 $$
-Y_{t,m,s}^{Counts} \sim \text{Binomial}(\text{size} = \lambda_{t,m,s}, \text{ p} = \tau_{s})
+\lambda_{t,m,s} = \exp(X_{t,m,s}); \text{ Continuous}\\
+N_{t,m,s} \sim \text{Poisson}(\lambda_{t,m,s}); \text{ Integer for Binomial} \\
+Y_{t,m,s}^{Counts} \sim \text{Binomial}(N_{t,m,s} \times \tau_{s})
 $$ 
 
-We need the detection probability parameter $\tau_{s}$. We aim to underdispersion but not extreme, so moderate $\tau_s$ and not too much heterogeneity.
+or also
+$$
+Y_{t,m,s}^{Counts} \sim \text{Poisson}(\lambda_{t,m,s} \times \tau_{s})
+$$
+
+We need the detection probability parameter $\tau_{s}$. We aim to underdispersion but not extreme, so moderate $\tau_s$ and not too much heterogeneity. Detection probabilities for North-American birds distributes with right-skew shape, so we can use a beta distribution with shape1 = 3 and shape2 = 7 across species.
 
 ```{r}
 # Species-level mean detectability 
 tau_s <- rbeta(S, 3, 7) # mean ~ 0.3 
 
-```
-
-```{r}
-Y_counts <- array(NA, dim = c(max(T_m), M, S))
+Y_counts <- array(NA, dim = c(T_max, M, S))
 
 for(s in 1:S){
   for(m in 1:M){
-    for(t in 1:T_m[m]){
-      # point count observation
-      Y_counts[t,m,s] <- rbinom(1, size = round(lambda[t,m,s]), prob = tau_s[s])
+    for(t in 1:T_max){ 
+      if(!is.na(T_m[t,m,s])){# only visited sites
+        # point count Binomial detection
+        Y_counts[t,m,s] <- rpois(1, lambda[t,m,s]*tau_s[s])
+      }
     }
   }
 }
@@ -260,29 +321,29 @@ for(s in 1:S){
 
 Recall:
 $$
-Y_{t,m,s}^{Acoust} \sim \text{Negative Binomial}(r_s,~p_{t,m,s}), \\
-p_{t,m,s} = \frac{r_s}{r_s + \lambda_{t,m,s}}
+Y_{t,m,s}^{Acoust} \sim \text{Negative Binomial}(r_s,~\pi_{t,m,s}), \\
+\pi_{t,m,s} = \frac{r_s}{r_s + \lambda_{t,m,s}}
 $$
 
-We need the overdispersion parameter $r_s$
+We need the overdispersion parameter $r_s$. The variance for a Negative Binomial is $\text{Var}(Y) = (\lambda+\lambda^2)/r_s$, being $\lambda$ the expected value (mean $\text{E}(Y) = \lambda$). The Variance-to-Mean Ratio is $\text{VMR} = \frac{\text{Var}(Y)}{\text{E}(Y)} = \frac{\lambda + \frac{\lambda^2}{r_s}}{\lambda} = 1+\frac{\lambda}{r_s}$. Thus, $r_s = \frac{\lambda}{\text{VMR}-1}$.
+
+Empirically, the mean of acoustic detections counts in our dataset was 11.363, while the Variance-to-Mean Ratio mean 18.872, thus we need a value of $r_s\approx \frac{11.36}{18.87-1}\approx 0.64$. The Gamma distribution with shape = 1.5 and rate 2.5 generates a mean $\approx 0.6$ generates 
 
 ```{r}
-r_s <- rgamma(S, shape = 0.8, rate = 0.15) # mean ~ 5
-```
+r_s <- rgamma(S, shape = 1.5, rate = 2.5) 
 
-Then we can generate the observed acoustic detections counts
-```{r}
-Y_acoust <- array(NA, dim = c(max(T_m), M, S))
+Y_acoust <- array(NA, dim = c(T_max, M, S))
 
 for(s in 1:S){
   for(m in 1:M){
-    for(t in 1:T_m[m]){
-      p_tms <- r_s[s] / (r_s[s] + lambda[t,m,s])
-      Y_acoust[t,m,s] <- rnbinom(1, size = r_s[s], prob = p_tms)
+    for(t in 1:T_max){
+      if(!is.na(T_m[t,m,s])){ #only visited
+      pi_tms <- r_s[s] / (r_s[s] + lambda[t,m,s])
+      Y_acoust[t,m,s] <- rnbinom(1, size = r_s[s], prob = pi_tms)
+      }
     }
   }
 }
-
 ```
 
 ### Check the Variance-to-Mean Ration (VMR) of this simulated dataset
@@ -301,13 +362,86 @@ df <- expand.grid(
   )
 
 df |>
-  filter(s == 1) |>
-  ggplot(aes(x = t, 
-             y = round(lambda),
-             color = m)) +
-    geom_point()
+  group_by(s,t) |>
+  summarise(lambda_mean = mean(lambda),
+            lambda_1st = quantile(lambda, probs = 0.25),
+            lambda_3rd = quantile(lambda, probs = 0.75),
+            Y_a_mean = mean(as.numeric(Y_acoust), na.rm = TRUE),
+            Y_a_1st = quantile(Y_acoust, probs = 0.25, na.rm = TRUE),
+            Y_a_3rd = quantile(Y_acoust, probs = 0.75, na.rm = TRUE),
+            Y_c_1st = quantile(Y_counts, probs = 0.25, na.rm = TRUE),
+            Y_c_3rd = quantile(Y_counts, probs = 0.75, na.rm = TRUE),
+            Y_c_mean = mean(Y_counts, na.rm = TRUE)) |>
+  ggplot(aes(x = t)) +
+    facet_wrap(~s, ncol = 2, scales = "free_y")+
+    geom_point(aes(y = Y_a_mean,
+                        color = "Y_acoust",
+                        fill = "Y_acoust",
+                        shape = "Y_acoust"),
+                    size = 1) +
+    geom_point(aes(y = Y_a_1st,
+                        color = "Y_acoust",
+                        fill = "Y_acoust",
+                        shape = "Y_acoust"),
+                    size = 0.5) +
+    geom_point(aes(y = Y_a_3rd,
+                        color = "Y_acoust",
+                        fill = "Y_acoust",
+                        shape = "Y_acoust"),
+                    size = 0.5) +
+    geom_point(aes(y = Y_c_mean,
+                        color = "Y_counts",
+                        fill = "Y_counts",
+                        shape = "Y_counts"), 
+                    size = 1) +
+    geom_point(aes(y = Y_c_1st,
+                        color = "Y_counts",
+                        fill = "Y_counts",
+                        shape = "Y_counts"),
+                    size = 0.5) +
+    geom_point(aes(y = Y_c_3rd,
+                        color = "Y_counts",
+                        fill = "Y_counts",
+                        shape = "Y_counts"),
+                    size = 0.5) +
+    geom_line(aes(y = lambda_1st,
+                        color = "lambda",
+                        fill = "lambda",
+                        shape = "lambda"),
+                    size = 0.5) +
+    geom_line(aes(y = lambda_3rd,
+                        color = "lambda",
+                        fill = "lambda",
+                        shape = "lambda"),
+                    size = 0.5) +
+    geom_point(aes(y = lambda_mean,
+                       color = "lambda",
+                       fill = "lambda",
+                       shape = "lambda"))+
+    scale_color_manual(name = "", 
+                     values = c("lambda" = "#00000060", 
+                                "Y_acoust" = "#FFA50060", 
+                                "Y_counts" = "#A020F060"), 
+                     breaks = c("lambda", "Y_acoust", "Y_counts"))+
+  scale_fill_manual(name = "", 
+                     values = c("lambda" = "#00000030", 
+                                "Y_acoust" = "#FFA50030", 
+                                "Y_counts" = "#A020F030"), 
+                     breaks = c("lambda", "Y_acoust", "Y_counts"))+
+  scale_shape_manual(name = "", 
+                     values = c("lambda" = 21, 
+                                "Y_acoust" = 24, 
+                                "Y_counts" = 25), 
+                     breaks = c("lambda", "Y_acoust", "Y_counts"))+
+    labs(x = "Time (30 10-min sampling in 2 days)",
+         y = "Abundance of six species\n(mean and IQR across 10 sites)")+
+  theme_classic()+
+    theme(legend.position = "bottom")
 
-# Remove NA values in the arrray of counts
+ggsave(filename = "figs/Simulating_Latent_Observed.jpg", 
+       width = 150, height = 100, units = "mm")
+
+# Remove NA values in the array of counts
 df_clean <- df |>
   filter(!is.na(Y_counts))
 
@@ -326,10 +460,11 @@ vmr_df <- df_clean |>
 
 as.data.frame(vmr_df)
 ```
+![Figure of sampling - range - and latent variable](figs/Simulating_Latent_Observed.jpg)
 
 ## Fit a stochastic GSS model to recover the parameters
 
-Let's prove to recover the parameters for one species ($s=1$). We need a model that represent our stochastic GSS (OU) in a datacloning framework. First, select the species.
+Let's prove if we can recover the parameters for one species, arbitrarily selected because underdispersion of counts and overdispersion of acoustic detection counts ($s=1$). We need a model that represent our stochastic GSS (OU) in a datacloning framework. First, select the species.
 
 ```{r}
 sp1 <- 1
@@ -338,60 +473,43 @@ Yc_s <- Y_counts[ , , sp1]
 Ya_s <- Y_acoust[ , , sp1]
 ```
 
+### Fit model for counts
+
+Let's fit first a "Counts" model
+
 ```{r Stochastic GSS model for data cloning fitting of point counts}
-AcousCountOU.dc <- function() {
+CountOU.dc <- function() {
 
   # Priors (no cloning)
-  lmu_init ~ dnorm(mumean, muprec)
-  ltheta_init ~ dnorm(lthetamean, lthetaprec)
-  lsigmasq_init ~ dnorm(0,1)
+  lmu ~ dnorm(log(3), 1/(0.3^2)) # in precision terms
+  ltheta ~ dnorm(log(0.3), 1/(0.2^2)) # in precision terms
+  lsigsq ~ dnorm(log(0.05), 1/(0.3^2)) # in precision terms
+  tau ~ dbeta(3,7) # detection probability
   
-  mu_star <- exp(lmu_init)    # stationary mean log-abundance
-  theta <- exp(ltheta_init)
-  c1    <- exp(-theta)        # mean-reversion
-  sig1  <- exp(lsigmasq_init) # process noise
+  mu <- lmu
+  theta <- exp(ltheta)
+  sigsq <- exp(lsigsq)
   
-  tau1  ~ dbeta(3, 7)         # Detection probability for species (no site)
-  r1    ~ dgamma(0.8, 0.15)   # NB overdispersion
+  cc <- exp(-theta)
+  aa <- mu * (1-cc)
+  Vinf <- sigsq/(1-exp(-2 * theta))
   
-  a1 <- mu_star * (1 - c1)    #derived drift
-
-  stovar1 <- 1 / pow(sig1, 2)
-  prec_tau <- 1 / pow(sig_tau, 2)
-  
-  # Site-level detection
-  for (m in 1:M) { 
-    eta_tau[m] ~ dnorm(mu_tau, prec_tau) 
-    logit(tau_m[m]) <- eta_tau[m]
-    }
-
   # Likelihood (data cloning)
   for (k in 1:K) {               # K = clones
     for (m in 1:M) {             # M = sites
       
       # Stationary distribution for t=1
-      mu1[1,m,k] <- mu_star
-      Var_X1[1,m,k]  <- pow(sig1, 2) / (1 - pow(c1, 2))
-      X1[1,m,k] ~ dnorm(mu1[1,m,k], 1 / Var_X1[1,m,k])
+      X1[1,m,k] ~ dnorm(mu, 1 / Vinf) # JAGS works with precision
 
       # State process over time
       for (t in 2:qp1) {
-        mu1[t,m,k] <- a1 + c1 * X1[t-1,m,k]
-        X1[t,m,k] ~ dnorm(mu1[t,m,k], stovar1)
+        X1[t,m,k] ~ dnorm((aa + cc * X1[t-1,m,k]), 1 / sigsq) # JAGS works with precision
       }
 
       # Observation processes
       for (t in 1:qp1) {
-        lambda[t,m,k] <- exp(X1[t,m,k])
-        
-        # Point counts (Binomial)
-        # integer of lambda
-        N1[t,m,k] <- round(lambda[t,m,k])
-        Y_counts[t,m,k] ~ dbin(tau_m[m], N1[t,m,k]) 
-
-        # Acoustic detections (Negative Binomial)
-        p_nb[t,m,k] <- r1 / (r1 + lambda[t,m,k])
-        Y_acoust[t,m,k] ~ dnegbin(p_nb[t,m,k], r1)
+        # point count Binomial detection
+        Y_counts[t,m,k] ~ dpois(exp(X1[t,m,k]) * tau)
       }
     }
   }
@@ -399,119 +517,168 @@ AcousCountOU.dc <- function() {
 
 ```
 
-For this model, we will need some initial values of the parameters, and given that there are many `NA` a wrap to provide those initial guess values.
-
-```{r two functions to guess initial parameters}
-guess.calc <- function(Yobs,Tvec){
-  
-  T.t <-Tvec-Tvec[1]; #  For calculations, time starts at zero.
-  q <- length(Yobs)-1;      #  Number of time series transitions, q.
-  qp1 <- q+1;              #  q+1 gets used a lot, too.
-  S.t <- T.t[2:qp1]-T.t[1:q];  #  Time intervals.
-  Ybar <- mean(Yobs);
-  Yvar <- sum((Yobs-Ybar)*(Yobs-Ybar))/q;
-  mu1 <- Ybar;
-  
-  # Kludge an initial value for theta based on mean of Y(t+s) given Y(t).
-  th1<- -mean(log(abs((Yobs[2:qp1]-mu1)/(Yobs[1:q]-mu1)))/S.t);            
-  bsq1<- 2*th1*Yvar/(1+2*th1);         # Moment estimate using stationary
-  tsq1<- bsq1;                         #   variance, with betasq=tausq.
-  
-  #three 0's 
-  three0s <- sum(c(th1,bsq1,tsq1))
-  if(three0s==0|is.na(three0s)){th1 <- 0.5;bsq1 <- 0.09; tsq1 <- 0.23;}
-  
-  
-  out1 <- c(th1,bsq1,tsq1);
-  if(sum(out1<1e-7)>=1){out1 <- c(0.5,0.09,0.23)}
-  out <- c(mu1,out1);
-  return(abs(out))
-  
-}
-
-guess.calc2.0<- function(TimeAndNs){
-  
-  newmat <- TimeAndNs 
-  isnas <- sum(is.na(TimeAndNs))
-  
-  if(isnas >= 1){
-    
-    isnaind <- which(is.na(TimeAndNs[,2]), arr.ind=TRUE)
-    newmat <- TimeAndNs[-isnaind,]
-    newmat[,1] <- newmat[,1] - newmat[1,1]
-    
-  }
-  
-  init.guess <- guess.calc(Yobs = log(newmat[,2]), Tvec=newmat[,1])
-  
-  mu1  <- init.guess[1]
-  th1  <- init.guess[2]
-  bsq1 <- init.guess[3]
-  sigsq1<- ((1-exp(-2*th1))*bsq1)/(2*th1)
-  
-  out <- c(mu=mu1, theta=th1, sigmasq = sigsq1)
-  return(out)
-}
-```
-
 And we can bundle the data and fit the model with data cloning.
-```{r}
-ts.4guess  <- Yc_s[,3]+1 
-tvec4guess  <- 1:length(ts.4guess)
-onets4guess <- cbind(tvec4guess, ts.4guess)
-naive.guess <- guess.calc2.0(TimeAndNs = onets4guess)
-naive.guess
-
-myinits <- list(lmu_init = log(naive.guess[1]),
-                ltheta_init = log(naive.guess[2]),
-                lsigmasq_init = log(naive.guess[3]))
+```{r, eval=FALSE}
+# initialize some values
+inits.c <- function() list(lmu = log(4), # true is 1.43 ~ log(4) = 1.39
+                           ltheta=log(0.3), # true -log(c_s[1]) = 0.27
+                           lsigsq=log(0.05), # true log(sigsq_s[1])=-2.77
+                           tau = 0.25)
 
 datalist.dc <- list( 
   K = 1, # clones start at 1 
   M = M, # number of sites 
-  qp1 = max(T_m), # number of time steps 
-  mumean=6, 
-  muprec=(1/3),
-  lthetamean = 0.5,
-  lthetaprec =  10,
-  Y_counts = dcdim(array(Yc_s, dim = c(max(T_m),M,1))), # [t,m] → [t,m,k]
-  Y_acoust = dcdim(array(Ya_s, dim = c(max(T_m),M,1)))  # [t,m] → [t,m,k]
+  qp1 = T_max, # number of time steps 
+  Y_counts = dcdim(array(Yc_s, dim = c(T_max,M,1))) #, # [t,m] → [t,m,k]
   )
 
 start_time <- Sys.time()
-dcrun.GSS <- dc.fit(data = datalist.dc,
-                    params = c("mu_star", "c1", "sig1", "r1", 
-                               "a1", "tau_m"), 
-                   # inits = myinits(datalist.dc),
-                    model = AcousCountOU.dc, 
-                    n.clones = c(1,2,5,10),
+dcrun.GSS.c <- dc.fit(data = datalist.dc,
+                    params = c("lmu", "ltheta", "lsigsq", "tau"), 
+                   inits = inits.c,
+                    model = CountOU.dc, 
+                    n.clones = c(1,2,4,8,16),
                     multiply = "K",
                     unchanged = c("M","qp1"),
-                    n.chains = 3,
-                    n.adapt = 10000,
-                    n.update = 100,
-                    thin = 20,
-                    n.iter = 50000)
+                    n.chains = 2,
+                    n.adapt = 2000,
+                    n.update = 50,
+                    thin = 10,
+                    n.iter = 15000)
+
+saveRDS(dcrun.GSS.c, "data/dcfitGSS_Sp1_upto16cl_count.rds")
+
 duration_model <- Sys.time()-start_time
-duration_model
-saveRDS(dcrun.GSS, "data/dcfitGSS_Sp1_upto100cl.rds")
+print(duration_model)
+```
+
+This fit had a duration of 3.6 hours in my computer. 
+
+### Fit model for acoustic detection counts
+
+Let's fit first a "Acoustic" model
+
+```{r Stochastic GSS model for data cloning fitting of point counts}
+AcoustOU.dc <- function() {
+
+  # Priors (no cloning)
+  lmu ~ dnorm(log(3), 1/(0.3^2)) # in precision terms
+  ltheta ~ dnorm(log(0.3), 1/(0.2^2)) # in precision terms
+  lsigsq ~ dnorm(log(0.05), 1/(0.3^2)) # in precision terms
+  r ~ dgamma(1.5, 2.5) 
+  
+  mu <- lmu
+  theta <- exp(ltheta)
+  sigsq <- exp(lsigsq)
+  
+  cc <- exp(-theta)
+  aa <- mu * (1-cc)
+  Vinf <- sigsq/(1-exp(-2 * theta))
+  
+  
+  # Likelihood (data cloning)
+  for (k in 1:K) {               # K = clones
+    for (m in 1:M) {             # M = sites
+      
+      # Stationary distribution for t=1
+      X1[1,m,k] ~ dnorm(mu, 1 / Vinf) # JAGS works with precision
+
+      # State process over time
+      for (t in 2:qp1) {
+        X1[t,m,k] ~ dnorm((aa + cc * X1[t-1,m,k]), 1 / sigsq) # JAGS works with precision
+      }
+
+      # Observation processes
+      for (t in 1:qp1) {
+        # Acoustic Negative Binomial detection
+        pi_nb[t,m,k] <- r / (r + exp(X1[t,m,k]))
+        Y_acoust[t,m,k] ~ dnegbin(pi_nb[t,m,k], r)
+      }
+    }
+  }
+}
+
+```
+
+And we can bundle the data and fit the model with data cloning.
+```{r, eval=FALSE}
+# initialize some values
+inits.a <- function() list(lmu = log(3), ltheta=log(0.3), lsigsq=log(0.05),
+                         r = 0.3)
+
+datalist.dc.a <- list( 
+  K = 1, # clones start at 1 
+  M = M, # number of sites 
+  qp1 = T_max, # number of time steps 
+  Y_acoust = dcdim(array(Ya_s, dim = c(T_max,M,1)))  # [t,m] → [t,m,k]
+  )
+
+start_time <- Sys.time()
+dcrun.GSS.a <- dc.fit(data = datalist.dc,
+                    params = c("lmu", "ltheta", "lsigsq", "r"), 
+                   inits = inits.a,
+                    model = AcoustOU.dc, 
+                    n.clones = c(1,2,4,8,16),
+                    multiply = "K",
+                    unchanged = c("M","qp1"),
+                    n.chains = 2,
+                    n.adapt = 2000,
+                    n.update = 50,
+                    thin = 10,
+                    n.iter = 15000)
+
+saveRDS(dcrun.GSS.a, "data/dcfitGSS_Sp1_upto16cl_acous.rds")
+
+duration_model <- Sys.time()-start_time
+print(duration_model)
+```
+
+This fit had a duration of 14 hours in my computer. We can check the MLEs:
+
+### Compare parameters from the two models
+```{r results of the data cloning fitted model point counts}
+dcrun.GSS.c <- readRDS("data/dcfitGSS_Sp1_upto16cl_count.rds")
+dcrun.GSS.a <- readRDS("data/dcfitGSS_Sp1_upto16cl_acous.rds")
+dcdiag(dcrun.GSS.c) 
+plot(dcdiag(dcrun.GSS.c))
+pairs(dcrun.GSS.c)
+summary(dcrun.GSS.c);
+
+dcdiag(dcrun.GSS.a) 
+plot(dcdiag(dcrun.GSS.a))
+pairs(dcrun.GSS.a)
+summary(dcrun.GSS.a);
 ```
 
 
-```{r results of the data cloning fitted model point counts}
-dcrun.GSS <- readRDS("data/dcfitGSS_Sp1_upto100cl.rds")
-dcdiag(dcrun.GSS) 
-plot(dcdiag(dcrun.GSS))
-pairs(dcrun.GSS)
-summary(dcrun.GSS);
 
-true_s1 <- cbind(
-  a    = a_s[1],
-  c    = c_s[1],
-  r    = r_s[1],
-  sig  = sigma_s[1],
-  tau  = mean(tau_ms[,1])
-)
-true_s1
-coef(dcrun.GSS)
+
+With these parameters, we can reconstruct the OU trajectory:
+
+$$
+\hat{X}_{m,t} \sim \text{Normal}\left(\frac{\hat{a}}{1-\hat{c}}, \frac{\hat{\sigma^2}}{1-\hat{c}^2}\right); \\
+
+\hat{\lambda}_{t,m} = \exp(\hat{X}_{t,m})
+$$
+
+```{r}
+a_hat <- coef(dcrun.GSS)[1]
+c_hat <- coef(dcrun.GSS)[2]
+sig_hat <- coef(dcrun.GSS)[5]
+mu_hat <- a_hat / (1 - c_hat)
+var_hat <- sig_hat / (1 - c_hat^2)
+```
+
+
+```{r}
+X_hat <- matrix(NA, nrow = max(T_m), ncol = M)
+
+X_hat[1,] <- rnorm(M, mu_hat, sqrt(var_hat))
+
+for(t in 2:max(T_m)){
+  X_hat[t,] <- a_hat + c_hat * X_hat[t-1,]
+}
+
+lambda_hat <- exp(X_hat)
+lambda_hat
 ```
