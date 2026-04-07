@@ -3,18 +3,17 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Estimating density as a latent variable from two observation processes
+# Estimating density as a latent variable from overdispersed acoustic detections
 ## Packages
 ```{r}
 library(tidyverse)
-# multi-species
 library(dclone) 
 library(rjags) 
 ```
 
 ## Framework
 
-Imagine we will sample birds during the morning (05:30-8:00) of every possible day at their breeding territory, and the birds defend that territory across the breeding season of that year. We can use point-counts and Passive Acoustic Monitoring in the same sites $m$. These two observation process should link with the ecological process (latent) of the abundance of individuals available to be detected and providing cues of their presence, which will be stationary during the sampling period (every morning during the breeding season). Evidently, some mornings and sampling events will have stochastic variation, reflecting a noise in the process that could be also accounted for. From empirical data, we have seeing that point counts are underdispersed (0 < Variance-to-Mean Ratio < 1), while acoustic detections are overdispersed (Variance-to-Mean Ration > 1).
+Imagine we will sample birds during the morning (05:30-8:00) of every possible day at their breeding territory, and the birds defend that territory across the breeding season of that year. We can use point-counts and Passive Acoustic Monitoring in the same sites $m$. These two observation process should link with the ecological process (latent) of the abundance of individuals available to be detected and providing cues of their presence, which will be assumed to be stationary during the sampling period (every morning during the breeding season). Evidently, some mornings and sampling events will have stochastic variation, reflecting a noise in the process that could be also accounted for. From empirical data, we have seeing that point counts could be underdispersed (0 < Variance-to-Mean Ratio < 1; Binomial) to uniformly dispersed (Variance-to-Mean Ration = 1; Poisson), while acoustic detections are overdispersed (Variance-to-Mean Ration >> 1; Negative Binomial).
 
 ```{r}
 # Gompertz functions
@@ -125,14 +124,15 @@ ggsave(filename = "figs/Framework.jpg")
 
 ![Framework for estimating latent density from two observation process using stochastic GSS](figs/Framework.jpg)
 
-Here we want to estimate the latent abundance (black line of the figure) from two observation process: counts from point counts (purple downward triangles) and acoustic detections from passive acoustic monitoring (orange upward triangles). The figure is fake data, with the unique purpose of present our framework and ecological rationale.
+Here we want to estimate the latent abundance (black line of the figure) from overdispersed acoustic detection counts from passive acoustic monitoring (orange upward triangles). We can compare the estimated latent abundance from underdispersed counts from point counts (purple downward triangles). The figure is fake data, with the unique purpose of present our framework and ecological rationale.
 
 ## Ecological process
 
-Let's assume that we have sites of sampling $m = 1,2,~...~,~M=10$ and species $s = 1,2,~...~,S = 4$ in an area. Our latent state $X_{t,m,s} = \log{(N_{m,s})}$ is the site-level log-abundance state for species $s$ at the site $m$, which follows a stationary Ornstein-Uhlenbeck, OU, diffusion for Gompertz function dynamic on the log-scale across time $t$, which could be discrete units of 10-min duration:
+Let's assume that we have sites of sampling $m = 1,2,~...~,~M=10$ and species $s = 1,2,~...~,S = 4$ in an area. Our latent state $X_{t,m,s} = \log{(N_{m,s})}$ is the site-level log-abundance state for species $s$ at the site $m$. This dynamic follows a stationary Ornstein-Uhlenbeck, OU, diffusion process for stochastic Gompertz function on the log-scale across time $t$, which could be represented in discrete units of 10-min duration:
 
 $$
-X_{t+1, m, s} = a_s + c_s * X_{t, m, s} + \epsilon_{t};\\ ~ \epsilon_t \sim \text{Normal}(0,\sigma_s^2)
+X_{t+1, m, s} = a_s + c_s * X_{t, m, s} + \epsilon_{t};\\ 
+~ \epsilon_t \sim \text{Normal}(0,\sigma_s^2)
 $$
 
 where $a_s$ control the drift (the initial condition at $t=1$, and then equivalent to the maximum growth rate in a population model), $c_s$ controls the mean-reverting dynamic (such as the strength of density dependence, $c_s = 1 + b_s$ in a population model), and $\epsilon_{t}$ captures stochasticity in the process, distributed as a normal random variable with some noise of the process as variance $\sigma_s^2$. Under stationarity and independence across sites, we can estimate the mean of the log-abundance as a function of the control drift and mean-reverting dynamic:
@@ -164,8 +164,8 @@ $$
 and the temporal trajectory within a site across the sampling period (15 blocks of 10-minutes each morning, 05:30 to 07:50, for ten days,  $t = 1, ..., T_m = 150$) looks like: 
 
 $$
-X_{t+1, m, s} = a_s + c_sX_{t,m,s} + \epsilon_{s}, \\
-\epsilon_{s} \sim \text{Normal}(0,\sigma^2_s)
+X_{t, m, s} = a_s + c_sX_{t-1,m,s} + \epsilon_{t,s}, \\
+\epsilon_{t,s} \sim \text{Normal}(0,\sigma^2_{t,s})
 $$
 and each time has its own realized latent state:
 $$
@@ -184,10 +184,9 @@ $$
 
 On the other hand, the acoustic detection data are 
 $$
-Y_{m,s}^{Acoust} \sim \text{Negative Binomial}(r_s,~\pi_{m,s}) \\
-\pi_{m,s} = \frac{r_s}{r_s+\lambda_{m,s}^{Acoust}}
+Y_{m,s}^{Acoust} \sim \text{Negative Binomial}(\lambda_{m,s}^{Acoust},\pi_s)
 $$
-\noindent where $r_s$ is the overdispersion parameter and $\pi_{m,s}$ represents the success parameter.
+\noindent where $\pi_s$ is the overdispersion parameter and $\lambda_{m,s}^{Acoust}$ represents the expected number of counts. Note that in original notation from Bolker, this expected number of counts for the Negative Binomial distribution is $\mu$, while the overdispersion parameter is $k$; we modified this to be consistent with the notation for the Poisson distribution ($\lambda^{Poisson} \approx \mu^{Negative~Binomial}$) and avoid confusion with the notation of datacloning ($k^{Negative~Binomial} \approx \pi \neq \text{number of clones}$.
 
 Thus, during the breeding season (May-June) we have the possibility to sample each site 30 times between 05:00 and 09:50 for several mornings, including various visits per site (such as 10 to 50). These 10-min duration sampling events generate the point counts (Binomial) and acoustic detection count (Negative Binomial) data in a simultaneous design. To accelerate the simulation, let's use two days ($T_m = 30 \times 2 = 60$)
 
