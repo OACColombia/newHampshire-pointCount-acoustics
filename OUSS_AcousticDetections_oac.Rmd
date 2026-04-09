@@ -1368,8 +1368,8 @@ alpha_df
 ```{r}
 table(acous_count$site_name)
 acous_count_filt <- acous_count |>
-  filter(common_name %in% c("Red-eyed Vireo"),
-         site_name == "Katahdin Woods and Waters",
+  filter(common_name %in% c("Ovenbird", "Red-eyed Vireo"),
+  #       site_name == "Katahdin Woods and Waters",
          year == 2022)
 
 table(acous_count_filt$common_name, acous_count_filt$data_type)
@@ -1384,7 +1384,9 @@ acoust_count_summary <- acous_count_filt |>
   # dummy column to unify time of detection either by count or 
   mutate(detection_time = coalesce(observation_time, begin_clock_time)) |>
   # initial temporal window
-  group_by(site_id, date) |>
+  group_by(site_id, 
+           common_name, # comment this if you filtered a species in particular
+           date) |>
   mutate(time_window = min(hms::as_hms(detection_time), na.rm = TRUE),
          time_window = hms::as_hms(time_window),
          DateTime = as.POSIXct(paste(date, time_window), format = "%Y-%m-%d %H:%M:%S"),
@@ -1401,6 +1403,52 @@ acoust_count_summary <- acous_count_filt |>
   arrange(Time_window)
 
 str(acoust_count_summary)
+```
+
+Figure
+
+```{r}
+acoust_count_summary |>
+  ggplot(aes(x = date)) +
+  facet_grid(common_name~site_name, scales = "free") +
+  geom_segment(aes(y = 0, 
+                   yend = acous_detections, 
+                   color = "Acoustic"),
+               alpha = 0.4)+
+  geom_point(aes(y = acous_detections,
+                 color = "Acoustic",
+                 fill = "Acoustic",
+                 shape = "Acoustic"),
+             size = 2) +
+  geom_segment(aes(y = 0, 
+                   yend = counts, 
+                   color = "Counts"), 
+               alpha = 0.4)+
+  geom_point(aes(y = counts,
+                 color = "Counts",
+                 fill = "Counts",
+                 shape = "Counts"),
+             size = 2) +
+  scale_y_continuous(limits = c(0,15))+
+#  geom_hline(yintercept = 15, linetype = "dashed")+
+  scale_color_manual(name = "",
+                     values = c("Acoustic" = "#1B9E77",
+                                "Counts" = "#D95F02")) +
+  scale_fill_manual(name = "",
+                     values = c("Acoustic" = "#1B9E7760",
+                                "Counts" = "#D95F0260")) +
+  scale_shape_manual(name = "",
+                     values = c("Acoustic" = 24,
+                                "Counts" = 25)) +
+  labs(
+    x = "Time (days of sampling in 2022)",
+    y = "Observed counts",
+    fill = "Data type",
+    color = "Data type"
+  ) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+
 ```
 
 And now we can prepare these data for data cloning
